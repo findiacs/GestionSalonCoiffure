@@ -45,9 +45,9 @@ MAIL_FROM_NAME="Salonify"
 FILESYSTEM_DISK=local
 
 # ── SMS Twilio (rappels 24h / 2h) ────────────────────────────
-# TWILIO_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# TWILIO_TOKEN=your_auth_token
-# TWILIO_FROM=+1XXXXXXXXXX
+TWILIO_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+TWILIO_TOKEN=your_auth_token
+TWILIO_FROM=+12345678900
 
 # ── Logging ──────────────────────────────────────────────────
 LOG_CHANNEL=stack
