@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Salon;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
 use App\Models\Employe;
+use App\Models\Reservation;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -27,7 +27,7 @@ class ReservationController extends Controller
 
         Log::info('Salon: liste reservations', [
             'salon_id' => $salon->id,
-            'filters'  => $request->only('statut', 'date', 'employe_id'),
+            'filters' => $request->only('statut', 'date', 'employe_id'),
         ]);
 
         $query = Reservation::where('salon_id', $salon->id)
@@ -53,12 +53,12 @@ class ReservationController extends Controller
             'en_attente' => Reservation::where('salon_id', $salon->id)
                 ->where('statut', 'en_attente')
                 ->where('date_heure', '>=', now())->count(),
-            'confirmee'  => Reservation::where('salon_id', $salon->id)
+            'confirmee' => Reservation::where('salon_id', $salon->id)
                 ->where('statut', 'confirmee')
                 ->where('date_heure', '>=', now())->count(),
-            'terminee'   => Reservation::where('salon_id', $salon->id)
+            'terminee' => Reservation::where('salon_id', $salon->id)
                 ->where('statut', 'terminee')->count(),
-            'annulee'    => Reservation::where('salon_id', $salon->id)
+            'annulee' => Reservation::where('salon_id', $salon->id)
                 ->where('statut', 'annulee')->count(),
         ];
 
@@ -69,7 +69,7 @@ class ReservationController extends Controller
 
     public function show(int $id): View
     {
-        $salon       = $this->salon();
+        $salon = $this->salon();
         $reservation = Reservation::where('salon_id', $salon->id)
             ->with(['service', 'employe', 'client', 'avis'])
             ->findOrFail($id);
@@ -81,7 +81,7 @@ class ReservationController extends Controller
 
     public function confirmer(int $id): RedirectResponse
     {
-        $salon       = $this->salon();
+        $salon = $this->salon();
         $reservation = Reservation::where('salon_id', $salon->id)
             ->where('statut', 'en_attente')
             ->findOrFail($id);
@@ -94,10 +94,10 @@ class ReservationController extends Controller
             $reservation->client_id,
             'reservation_confirmee',
             [
-                'salon'    => $salon->nom_salon,
-                'service'  => $reservation->service->nom_service,
-                'date'     => $reservation->date_heure->translatedFormat('D d M Y'),
-                'heure'    => $reservation->date_heure->format('H:i'),
+                'salon' => $salon->nom_salon,
+                'service' => $reservation->service->nom_service,
+                'date' => $reservation->date_heure->translatedFormat('D d M Y'),
+                'heure' => $reservation->date_heure->format('H:i'),
             ],
             $reservation->load(['client', 'salon.ville', 'service', 'employe'])
         );
@@ -107,7 +107,7 @@ class ReservationController extends Controller
 
     public function terminer(int $id): RedirectResponse
     {
-        $salon       = $this->salon();
+        $salon = $this->salon();
         $reservation = Reservation::where('salon_id', $salon->id)
             ->where('statut', 'confirmee')
             ->findOrFail($id);
@@ -121,7 +121,7 @@ class ReservationController extends Controller
 
     public function annuler(Request $request, int $id): RedirectResponse
     {
-        $salon       = $this->salon();
+        $salon = $this->salon();
         $reservation = Reservation::where('salon_id', $salon->id)
             ->whereIn('statut', ['en_attente', 'confirmee'])
             ->findOrFail($id);
@@ -133,26 +133,26 @@ class ReservationController extends Controller
         ]);
 
         $reservation->update([
-            'statut'      => 'annulee',
+            'statut' => 'annulee',
             'annulee_par' => 'salon',
-            'date_annul'  => now(),
+            'date_annul' => now(),
             'motif_annul' => $request->motif,
         ]);
 
         Log::info('Salon: reservation annulee', [
-            'salon_id'       => $salon->id,
+            'salon_id' => $salon->id,
             'reservation_id' => $id,
-            'motif'          => $request->motif,
+            'motif' => $request->motif,
         ]);
 
         $this->notifService->envoyerAvecEmail(
             $reservation->client_id,
             'reservation_annulee',
             [
-                'salon'   => $salon->nom_salon,
+                'salon' => $salon->nom_salon,
                 'service' => $reservation->service->nom_service,
-                'date'    => $reservation->date_heure->translatedFormat('D d M Y'),
-                'motif'   => $request->motif,
+                'date' => $reservation->date_heure->translatedFormat('D d M Y'),
+                'motif' => $request->motif,
             ],
             $reservation->load(['client', 'salon.ville', 'service'])
         );

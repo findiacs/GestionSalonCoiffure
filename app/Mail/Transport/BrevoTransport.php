@@ -20,7 +20,7 @@ class BrevoTransport extends AbstractTransport
             Log::error('[Brevo] ⚠ API key vide — BREVO_API_KEY non défini dans l\'environnement Railway');
         } else {
             Log::info('[Brevo] Transport initialisé', [
-                'api_key_prefix' => substr($this->apiKey, 0, 12) . '...',
+                'api_key_prefix' => substr($this->apiKey, 0, 12).'...',
                 'api_key_length' => strlen($this->apiKey),
             ]);
         }
@@ -37,43 +37,43 @@ class BrevoTransport extends AbstractTransport
         }
         $from = $fromList[0];
 
-        $toAddresses = array_map(fn($a) => array_filter([
+        $toAddresses = array_map(fn ($a) => array_filter([
             'email' => $a->getAddress(),
-            'name'  => $a->getName() ?: null,
+            'name' => $a->getName() ?: null,
         ]), $email->getTo());
 
-        $ccAddresses = array_map(fn($a) => array_filter([
+        $ccAddresses = array_map(fn ($a) => array_filter([
             'email' => $a->getAddress(),
-            'name'  => $a->getName() ?: null,
+            'name' => $a->getName() ?: null,
         ]), $email->getCc());
 
-        $replyToList = array_map(fn($a) => array_filter([
+        $replyToList = array_map(fn ($a) => array_filter([
             'email' => $a->getAddress(),
-            'name'  => $a->getName() ?: null,
+            'name' => $a->getName() ?: null,
         ]), $email->getReplyTo());
 
         $payload = array_filter([
-            'sender'      => array_filter([
+            'sender' => array_filter([
                 'email' => $from->getAddress(),
-                'name'  => $from->getName() ?: null,
+                'name' => $from->getName() ?: null,
             ]),
-            'to'          => array_values($toAddresses),
-            'cc'          => !empty($ccAddresses) ? array_values($ccAddresses) : null,
-            'replyTo'     => !empty($replyToList) ? ($replyToList[0] ?? null) : null,
-            'subject'     => $email->getSubject(),
+            'to' => array_values($toAddresses),
+            'cc' => ! empty($ccAddresses) ? array_values($ccAddresses) : null,
+            'replyTo' => ! empty($replyToList) ? ($replyToList[0] ?? null) : null,
+            'subject' => $email->getSubject(),
             'htmlContent' => $email->getHtmlBody(),
             'textContent' => $email->getTextBody(),
         ]);
 
-        $recipients = array_map(fn($a) => $a->getAddress(), $email->getTo());
-        $subject    = $email->getSubject();
+        $recipients = array_map(fn ($a) => $a->getAddress(), $email->getTo());
+        $subject = $email->getSubject();
 
         Log::info('[Brevo] → Envoi email', [
-            'from'     => $from->getAddress(),
-            'to'       => $recipients,
-            'subject'  => $subject,
-            'has_html' => !empty($email->getHtmlBody()),
-            'has_text' => !empty($email->getTextBody()),
+            'from' => $from->getAddress(),
+            'to' => $recipients,
+            'subject' => $subject,
+            'has_html' => ! empty($email->getHtmlBody()),
+            'has_text' => ! empty($email->getTextBody()),
         ]);
 
         if (empty($this->apiKey)) {
@@ -84,9 +84,9 @@ class BrevoTransport extends AbstractTransport
 
         try {
             $response = Http::withHeaders([
-                'api-key'      => $this->apiKey,
+                'api-key' => $this->apiKey,
                 'Content-Type' => 'application/json',
-                'Accept'       => 'application/json',
+                'Accept' => 'application/json',
             ])
                 ->timeout(20)
                 ->connectTimeout(10)
@@ -94,32 +94,32 @@ class BrevoTransport extends AbstractTransport
         } catch (\Throwable $e) {
             Log::error('[Brevo] ✗ Exception réseau', [
                 'exception' => get_class($e),
-                'message'   => $e->getMessage(),
-                'to'        => $recipients,
-                'subject'   => $subject,
+                'message' => $e->getMessage(),
+                'to' => $recipients,
+                'subject' => $subject,
             ]);
             throw new \RuntimeException(
-                'Brevo API erreur réseau : ' . $e->getMessage(), 0, $e
+                'Brevo API erreur réseau : '.$e->getMessage(), 0, $e
             );
         }
 
         if (! $response->successful()) {
             Log::error('[Brevo] ✗ Réponse API non-OK', [
-                'status'  => $response->status(),
-                'body'    => $response->body(),
-                'to'      => $recipients,
+                'status' => $response->status(),
+                'body' => $response->body(),
+                'to' => $recipients,
                 'subject' => $subject,
             ]);
             throw new \RuntimeException(
-                'Brevo API error (HTTP ' . $response->status() . '): ' . $response->body()
+                'Brevo API error (HTTP '.$response->status().'): '.$response->body()
             );
         }
 
         Log::info('[Brevo] ✓ Email envoyé', [
-            'to'         => $recipients,
-            'subject'    => $subject,
+            'to' => $recipients,
+            'subject' => $subject,
             'message_id' => $response->json('messageId'),
-            'status'     => $response->status(),
+            'status' => $response->status(),
         ]);
     }
 

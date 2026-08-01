@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class AdminSeeder extends Seeder
 {
@@ -14,11 +14,11 @@ class AdminSeeder extends Seeder
         $admin = User::updateOrCreate(
             ['email' => 'admin@salonify.ma'],
             [
-                'prenom'           => 'Admin',
-                'nom'              => 'Salonify',
-                'mot_de_passe'     => Hash::make('Admin@2026!'),
-                'telephone'        => '05370000001',
-                'role'             => 'admin',
+                'prenom' => 'Admin',
+                'nom' => 'Salonify',
+                'mot_de_passe' => Hash::make('Admin@2026!'),
+                'telephone' => '05370000001',
+                'role' => 'admin',
                 'email_verifie_le' => now(),
             ]
         );
@@ -36,17 +36,17 @@ class AdminSeeder extends Seeder
             User::updateOrCreate(
                 ['email' => $c['email']],
                 [
-                    'prenom'           => $c['prenom'],
-                    'nom'              => $c['nom'],
-                    'mot_de_passe'     => Hash::make('Client@2026!'),
-                    'telephone'        => $c['tel'],
-                    'role'             => 'client',
+                    'prenom' => $c['prenom'],
+                    'nom' => $c['nom'],
+                    'mot_de_passe' => Hash::make('Client@2026!'),
+                    'telephone' => $c['tel'],
+                    'role' => 'client',
                     'email_verifie_le' => now(),
                 ]
             );
         }
 
-        $this->command->info('✓ AdminSeeder : 1 admin + ' . count($clients) . ' clients créés.');
+        $this->command->info('✓ AdminSeeder : 1 admin + '.count($clients).' clients créés.');
         $this->command->line('  → admin@salonify.ma / Admin@2026!');
         $this->command->line('  → salma.benali@email.com / Client@2026!');
     }

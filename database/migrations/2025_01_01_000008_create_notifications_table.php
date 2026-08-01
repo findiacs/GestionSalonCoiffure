@@ -11,11 +11,11 @@ return new class extends Migration
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();              // UUID v4
             $table->foreignId('user_id')
-                  ->constrained('users')->cascadeOnDelete();
+                ->constrained('users')->cascadeOnDelete();
             $table->string('type', 100)
-                  ->comment('reservation_confirmee, rappel_rdv, salon_valide...');
+                ->comment('reservation_confirmee, rappel_rdv, salon_valide...');
             $table->json('donnees')->nullable()
-                  ->comment('Payload JSON variable selon le type');
+                ->comment('Payload JSON variable selon le type');
             $table->dateTime('lu_le')->nullable();
             $table->timestamp('cree_le')->useCurrent();
 

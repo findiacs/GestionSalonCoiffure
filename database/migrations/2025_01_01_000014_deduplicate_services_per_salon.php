@@ -17,8 +17,8 @@ return new class extends Migration
             ->get();
 
         foreach ($duplicates as $row) {
-            $allIds    = array_map('intval', explode(',', $row->ids));
-            $keepId    = (int) $row->keep_id;
+            $allIds = array_map('intval', explode(',', $row->ids));
+            $keepId = (int) $row->keep_id;
             $deleteIds = array_values(array_diff($allIds, [$keepId]));
 
             if (empty($deleteIds)) {

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\View\View;
 
 class ForgotPasswordController extends Controller
 {
@@ -22,7 +22,7 @@ class ForgotPasswordController extends Controller
             'email' => ['required', 'email'],
         ], [
             'email.required' => 'L\'adresse email est obligatoire.',
-            'email.email'    => 'L\'adresse email n\'est pas valide.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
         ]);
 
         Log::info('Auth: demande reinitialisation mot de passe', ['email' => $request->email]);
@@ -33,8 +33,9 @@ class ForgotPasswordController extends Controller
 
         if ($status === Password::RESET_LINK_SENT) {
             Log::info('Auth: lien reinitialisation envoye', ['email' => $request->email]);
+
             return back()->with('success',
-                'Un email de réinitialisation a été envoyé à ' . $request->email . '. ' .
+                'Un email de réinitialisation a été envoyé à '.$request->email.'. '.
                 'Le lien est valable 60 minutes.'
             );
         }

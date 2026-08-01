@@ -11,26 +11,26 @@ return new class extends Migration
         Schema::create('reservations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')
-                  ->constrained('users')->cascadeOnDelete();
+                ->constrained('users')->cascadeOnDelete();
             $table->foreignId('salon_id')
-                  ->constrained('salons')->cascadeOnDelete();
+                ->constrained('salons')->cascadeOnDelete();
             $table->foreignId('service_id')
-                  ->constrained('services')->restrictOnDelete();
+                ->constrained('services')->restrictOnDelete();
             $table->foreignId('employe_id')
-                  ->nullable()->constrained('employes')->nullOnDelete();
+                ->nullable()->constrained('employes')->nullOnDelete();
             $table->dateTime('date_heure');
             $table->unsignedSmallInteger('duree_minutes')->default(30);
             $table->enum('statut', ['en_attente', 'confirmee', 'annulee', 'terminee'])
-                  ->default('en_attente');
+                ->default('en_attente');
             $table->text('notes_client')->nullable();
             $table->text('notes_salon')->nullable();
             $table->string('motif_annul', 255)->nullable();
             $table->enum('annulee_par', ['client', 'salon', 'admin'])->nullable();
             $table->dateTime('date_annul')->nullable();
             $table->boolean('rappel_24h')->default(false)
-                  ->comment('SMS rappel 24h envoyé');
+                ->comment('SMS rappel 24h envoyé');
             $table->boolean('rappel_2h')->default(false)
-                  ->comment('SMS rappel 2h envoyé');
+                ->comment('SMS rappel 2h envoyé');
             $table->timestamp('cree_le')->useCurrent();
 
             // Index pour les requêtes fréquentes

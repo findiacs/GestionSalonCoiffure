@@ -2,18 +2,16 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Services\NotificationService;
-use App\Models\User;
-use App\Models\Ville;
+use App\Mail\Rappel24hMail;
+use App\Models\Reservation;
 use App\Models\Salon;
 use App\Models\Service;
-use App\Models\Reservation;
-use App\Models\Notification;
-use App\Mail\Rappel24hMail;
+use App\Models\User;
+use App\Models\Ville;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
+use Tests\TestCase;
 
 class NotificationServiceTest extends TestCase
 {
@@ -24,7 +22,7 @@ class NotificationServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->notificationService = new NotificationService();
+        $this->notificationService = new NotificationService;
         Mail::fake();
     }
 
@@ -36,7 +34,7 @@ class NotificationServiceTest extends TestCase
             'code_postal' => '20000',
             'region' => 'Casablanca-Settat',
             'pays' => 'Maroc',
-            'actif' => true
+            'actif' => true,
         ]);
 
         $client = User::create([
@@ -45,7 +43,7 @@ class NotificationServiceTest extends TestCase
             'email' => 'john@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'client',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salonUser = User::create([
@@ -54,20 +52,20 @@ class NotificationServiceTest extends TestCase
             'email' => 'jane@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'salon',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salon = Salon::create([
             'user_id' => $salonUser->id,
             'ville_id' => $ville->id,
             'nom_salon' => 'Mon Super Salon',
-            'adresse' => '123 Rue de la Coiffure'
+            'adresse' => '123 Rue de la Coiffure',
         ]);
 
         $service = Service::create([
             'salon_id' => $salon->id,
             'nom_service' => 'Coupe Homme',
-            'prix' => 100.00
+            'prix' => 100.00,
         ]);
 
         $reservation = Reservation::create([
@@ -76,7 +74,7 @@ class NotificationServiceTest extends TestCase
             'service_id' => $service->id,
             'date_heure' => now()->addHours(24),
             'statut' => 'confirmee',
-            'rappel_24h' => false
+            'rappel_24h' => false,
         ]);
 
         // Execute
@@ -88,7 +86,7 @@ class NotificationServiceTest extends TestCase
 
         $this->assertDatabaseHas('notifications', [
             'user_id' => $client->id,
-            'type' => 'rappel_24h'
+            'type' => 'rappel_24h',
         ]);
 
         Mail::assertSent(Rappel24hMail::class, function ($mail) use ($client) {
@@ -104,7 +102,7 @@ class NotificationServiceTest extends TestCase
             'code_postal' => '20000',
             'region' => 'Casablanca-Settat',
             'pays' => 'Maroc',
-            'actif' => true
+            'actif' => true,
         ]);
 
         $client = User::create([
@@ -113,7 +111,7 @@ class NotificationServiceTest extends TestCase
             'email' => 'john2@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'client',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salonUser = User::create([
@@ -122,20 +120,20 @@ class NotificationServiceTest extends TestCase
             'email' => 'jane2@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'salon',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salon = Salon::create([
             'user_id' => $salonUser->id,
             'ville_id' => $ville->id,
             'nom_salon' => 'Mon Super Salon',
-            'adresse' => '123 Rue de la Coiffure'
+            'adresse' => '123 Rue de la Coiffure',
         ]);
 
         $service = Service::create([
             'salon_id' => $salon->id,
             'nom_service' => 'Coupe Homme',
-            'prix' => 100.00
+            'prix' => 100.00,
         ]);
 
         // Reservation in 10 hours (too soon)
@@ -145,7 +143,7 @@ class NotificationServiceTest extends TestCase
             'service_id' => $service->id,
             'date_heure' => now()->addHours(10),
             'statut' => 'confirmee',
-            'rappel_24h' => false
+            'rappel_24h' => false,
         ]);
 
         // Reservation in 48 hours (too late)
@@ -155,7 +153,7 @@ class NotificationServiceTest extends TestCase
             'service_id' => $service->id,
             'date_heure' => now()->addHours(48),
             'statut' => 'confirmee',
-            'rappel_24h' => false
+            'rappel_24h' => false,
         ]);
 
         // Execute
@@ -174,7 +172,7 @@ class NotificationServiceTest extends TestCase
             'code_postal' => '20000',
             'region' => 'Casablanca-Settat',
             'pays' => 'Maroc',
-            'actif' => true
+            'actif' => true,
         ]);
 
         $client = User::create([
@@ -183,7 +181,7 @@ class NotificationServiceTest extends TestCase
             'email' => 'john3@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'client',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salonUser = User::create([
@@ -192,20 +190,20 @@ class NotificationServiceTest extends TestCase
             'email' => 'jane3@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'salon',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salon = Salon::create([
             'user_id' => $salonUser->id,
             'ville_id' => $ville->id,
             'nom_salon' => 'Mon Super Salon',
-            'adresse' => '123 Rue de la Coiffure'
+            'adresse' => '123 Rue de la Coiffure',
         ]);
 
         $service = Service::create([
             'salon_id' => $salon->id,
             'nom_service' => 'Coupe Homme',
-            'prix' => 100.00
+            'prix' => 100.00,
         ]);
 
         // Reservation en_attente
@@ -215,7 +213,7 @@ class NotificationServiceTest extends TestCase
             'service_id' => $service->id,
             'date_heure' => now()->addHours(24),
             'statut' => 'en_attente',
-            'rappel_24h' => false
+            'rappel_24h' => false,
         ]);
 
         // Execute
@@ -234,7 +232,7 @@ class NotificationServiceTest extends TestCase
             'code_postal' => '20000',
             'region' => 'Casablanca-Settat',
             'pays' => 'Maroc',
-            'actif' => true
+            'actif' => true,
         ]);
 
         $client = User::create([
@@ -243,7 +241,7 @@ class NotificationServiceTest extends TestCase
             'email' => 'john4@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'client',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salonUser = User::create([
@@ -252,20 +250,20 @@ class NotificationServiceTest extends TestCase
             'email' => 'jane4@example.com',
             'mot_de_passe' => bcrypt('password'),
             'role' => 'salon',
-            'ville_id' => $ville->id
+            'ville_id' => $ville->id,
         ]);
 
         $salon = Salon::create([
             'user_id' => $salonUser->id,
             'ville_id' => $ville->id,
             'nom_salon' => 'Mon Super Salon',
-            'adresse' => '123 Rue de la Coiffure'
+            'adresse' => '123 Rue de la Coiffure',
         ]);
 
         $service = Service::create([
             'salon_id' => $salon->id,
             'nom_service' => 'Coupe Homme',
-            'prix' => 100.00
+            'prix' => 100.00,
         ]);
 
         // Reservation already reminded
@@ -275,7 +273,7 @@ class NotificationServiceTest extends TestCase
             'service_id' => $service->id,
             'date_heure' => now()->addHours(24),
             'statut' => 'confirmee',
-            'rappel_24h' => true
+            'rappel_24h' => true,
         ]);
 
         // Execute

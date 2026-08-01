@@ -12,10 +12,10 @@ return new class extends Migration
         Schema::create('avis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reservation_id')
-                  ->unique()                          // 1 avis max par réservation
-                  ->constrained('reservations')->cascadeOnDelete();
+                ->unique()                          // 1 avis max par réservation
+                ->constrained('reservations')->cascadeOnDelete();
             $table->tinyInteger('note')
-                  ->comment('1 à 5 étoiles');
+                ->comment('1 à 5 étoiles');
             $table->text('commentaire')->nullable();
             $table->text('reponse_salon')->nullable();
             $table->timestamps();

@@ -25,8 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
             Log::info('[Boot] Enregistrement transport Brevo', [
                 'mailer_default' => config('mail.default'),
-                'has_api_key'    => $apiKey !== '',
-                'api_key_prefix' => $apiKey !== '' ? substr($apiKey, 0, 12) . '...' : null,
+                'has_api_key' => $apiKey !== '',
+                'api_key_prefix' => $apiKey !== '' ? substr($apiKey, 0, 12).'...' : null,
             ]);
 
             return new BrevoTransport($apiKey);

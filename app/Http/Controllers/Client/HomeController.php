@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ville;
-use App\Models\Salon;
 use App\Models\Reservation;
+use App\Models\Salon;
+use App\Models\Ville;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +17,8 @@ class HomeController extends Controller
     {
         Log::info('[Home] Page accueil', [
             'user_id' => Auth::id(),
-            'q'       => $request->input('q'),
-            'ville'   => $request->input('ville'),
+            'q' => $request->input('q'),
+            'ville' => $request->input('ville'),
         ]);
 
         // Villes actives avec au moins un salon validé + compteur
@@ -37,8 +37,8 @@ class HomeController extends Controller
 
         // Statistiques globales affichées sur la hero section
         $stats = [
-            'salons'       => Salon::valides()->count(),
-            'villes'       => $villes->count(),
+            'salons' => Salon::valides()->count(),
+            'villes' => $villes->count(),
             'reservations' => Reservation::count(),
         ];
 
@@ -47,12 +47,10 @@ class HomeController extends Controller
         if ($request->filled('q') || $request->filled('ville')) {
             $recherche = Salon::valides()
                 ->with('ville')
-                ->when($request->q, fn($q, $term) =>
-                    $q->where('nom_salon', 'like', "%$term%")
-                      ->orWhere('quartier',  'like', "%$term%")
+                ->when($request->q, fn ($q, $term) => $q->where('nom_salon', 'like', "%$term%")
+                    ->orWhere('quartier', 'like', "%$term%")
                 )
-                ->when($request->ville, fn($q, $villeId) =>
-                    $q->where('ville_id', $villeId)
+                ->when($request->ville, fn ($q, $villeId) => $q->where('ville_id', $villeId)
                 )
                 ->mieuxNotes()
                 ->limit(12)
@@ -64,12 +62,12 @@ class HomeController extends Controller
         ));
     }
 
-    public function about(): \Illuminate\View\View
+    public function about(): View
     {
         $stats = [
-            'salons'       => \App\Models\Salon::valides()->count(),
-            'villes'       => \App\Models\Ville::actives()->count(),
-            'reservations' => \App\Models\Reservation::count(),
+            'salons' => Salon::valides()->count(),
+            'villes' => Ville::actives()->count(),
+            'reservations' => Reservation::count(),
         ];
 
         return view('public.about', compact('stats'));

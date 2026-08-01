@@ -21,27 +21,27 @@ class DashboardController extends Controller
 
         $now = Carbon::now();
 
-        $salonsTotal   = Salon::count();
+        $salonsTotal = Salon::count();
         $salonsValides = Salon::where('valide', 1)->count();
         $salonsAttente = Salon::where('valide', 0)->count();
-        $usersTotal    = User::count();
-        $usersClients  = User::where('role', 'client')->count();
-        $resaTotal     = Reservation::count();
-        $resaCeMois    = Reservation::whereYear('date_heure', $now->year)
-                            ->whereMonth('date_heure', $now->month)->count();
+        $usersTotal = User::count();
+        $usersClients = User::where('role', 'client')->count();
+        $resaTotal = Reservation::count();
+        $resaCeMois = Reservation::whereYear('date_heure', $now->year)
+            ->whereMonth('date_heure', $now->month)->count();
         $avisSansReponse = Avis::whereNull('reponse_salon')->count();
         $villesActives = Ville::has('salons')->count();
 
         $kpi = [
-            'salons_total'    => $salonsTotal,
-            'salons_valides'  => $salonsValides,
-            'salons_attente'  => $salonsAttente,
-            'users_total'     => $usersTotal,
-            'users_clients'   => $usersClients,
-            'reservations'    => $resaTotal,
-            'resa_ce_mois'    => $resaCeMois,
+            'salons_total' => $salonsTotal,
+            'salons_valides' => $salonsValides,
+            'salons_attente' => $salonsAttente,
+            'users_total' => $usersTotal,
+            'users_clients' => $usersClients,
+            'reservations' => $resaTotal,
+            'resa_ce_mois' => $resaCeMois,
             'avis_sans_reponse' => $avisSansReponse,
-            'villes_actives'  => $villesActives,
+            'villes_actives' => $villesActives,
         ];
 
         Log::debug('Admin: KPI charges', $kpi);
@@ -49,16 +49,16 @@ class DashboardController extends Controller
         $alertes = [];
         if ($salonsAttente > 0) {
             $alertes[] = [
-                'type'    => 'warning',
-                'message' => $salonsAttente . ' salon(s) en attente de validation.',
-                'route'   => route('admin.salons.index') . '?statut=attente',
+                'type' => 'warning',
+                'message' => $salonsAttente.' salon(s) en attente de validation.',
+                'route' => route('admin.salons.index').'?statut=attente',
             ];
         }
         if ($avisSansReponse > 0) {
             $alertes[] = [
-                'type'    => 'info',
-                'message' => $avisSansReponse . ' avis client(s) sans réponse du salon.',
-                'route'   => route('admin.avis.index') . '?sans_reponse=1',
+                'type' => 'info',
+                'message' => $avisSansReponse.' avis client(s) sans réponse du salon.',
+                'route' => route('admin.avis.index').'?sans_reponse=1',
             ];
         }
 
@@ -85,8 +85,8 @@ class DashboardController extends Controller
             $chartResa[] = [
                 'label' => $mois->translatedFormat('M'),
                 'value' => Reservation::whereYear('date_heure', $mois->year)
-                               ->whereMonth('date_heure', $mois->month)
-                               ->count(),
+                    ->whereMonth('date_heure', $mois->month)
+                    ->count(),
             ];
         }
 

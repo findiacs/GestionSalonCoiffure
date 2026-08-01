@@ -6,8 +6,8 @@ use App\Mail\NouvelAvisMail;
 use App\Mail\Rappel24hMail;
 use App\Mail\Rappel2hMail;
 use App\Mail\ReponseAvisMail;
-use App\Mail\ReservationConfirmeeMail;
 use App\Mail\ReservationAnnuleeMail;
+use App\Mail\ReservationConfirmeeMail;
 use App\Mail\ReservationTermineeMail;
 use App\Models\Avis;
 use App\Models\Notification;
@@ -21,12 +21,12 @@ class NotificationService
     private array $messages = [
         'nouvelle_reservation' => 'Nouvelle réservation de :client pour :service le :date à :heure.',
         'reservation_confirmee' => 'Votre réservation chez :salon pour :service le :date à :heure a été confirmée.',
-        'reservation_annulee'   => 'Votre réservation chez :salon pour :service le :date a été annulée. Motif : :motif.',
+        'reservation_annulee' => 'Votre réservation chez :salon pour :service le :date a été annulée. Motif : :motif.',
         'reservation_terminee' => 'Votre réservation chez :salon pour :service le :date à :heure est maintenant terminée.',
-        'rappel_24h'            => 'Rappel : votre rendez-vous chez :salon est demain à :heure pour :service.',
-        'rappel_2h'             => 'Rappel : votre rendez-vous chez :salon est dans 2h (:heure) pour :service.',
-        'reponse_avis'          => ':salon a répondu à votre avis.',
-        'nouvel_avis'           => 'Nouvel avis (:note/5) de :client sur votre salon.',
+        'rappel_24h' => 'Rappel : votre rendez-vous chez :salon est demain à :heure pour :service.',
+        'rappel_2h' => 'Rappel : votre rendez-vous chez :salon est dans 2h (:heure) pour :service.',
+        'reponse_avis' => ':salon a répondu à votre avis.',
+        'nouvel_avis' => 'Nouvel avis (:note/5) de :client sur votre salon.',
     ];
 
     /**
@@ -37,14 +37,14 @@ class NotificationService
         $message = $this->messages[$type] ?? $type;
 
         foreach ($params as $key => $value) {
-            $message = str_replace(':' . $key, $value, $message);
+            $message = str_replace(':'.$key, $value, $message);
         }
 
         return Notification::create([
             'user_id' => $userId,
-            'type'    => $type,
+            'type' => $type,
             'donnees' => ['message' => $message],
-            'lu_le'   => null,
+            'lu_le' => null,
             'cree_le' => now(),
         ]);
     }
@@ -58,7 +58,9 @@ class NotificationService
 
         try {
             $user = User::find($userId);
-            if (! $user) return $notif;
+            if (! $user) {
+                return $notif;
+            }
 
             $envoye = match ($type) {
                 'reservation_confirmee' => $reservation
@@ -86,15 +88,15 @@ class NotificationService
 
             if ($envoye) {
                 Log::info('Email notification envoye', [
-                    'type'    => $type,
+                    'type' => $type,
                     'user_id' => $userId,
-                    'to'      => $user->email,
+                    'to' => $user->email,
                 ]);
             }
         } catch (\Throwable $e) {
             Log::error('Erreur envoi email notification', [
-                'type'    => $type,
-                'userId'  => $userId,
+                'type' => $type,
+                'userId' => $userId,
                 'message' => $e->getMessage(),
             ]);
         }
@@ -117,17 +119,17 @@ class NotificationService
         foreach ($reservations as $r) {
             /** @var Reservation $r */
             $r->update([
-                'statut'      => 'annulee',
+                'statut' => 'annulee',
                 'annulee_par' => 'systeme',
-                'date_annul'  => now(),
+                'date_annul' => now(),
                 'motif_annul' => 'Réservation expirée automatiquement après la date prévue.',
             ]);
 
             $this->envoyerAvecEmail($r->client_id, 'reservation_annulee', [
-                'salon'   => $r->salon->nom_salon,
+                'salon' => $r->salon->nom_salon,
                 'service' => $r->service->nom_service,
-                'date'    => $r->date_heure->translatedFormat('D d M Y'),
-                'motif'   => $r->motif_annul,
+                'date' => $r->date_heure->translatedFormat('D d M Y'),
+                'motif' => $r->motif_annul,
             ], $r);
 
             Log::info('Reservation expiree annulee', ['reservation_id' => $r->id, 'client_id' => $r->client_id]);
@@ -153,10 +155,10 @@ class NotificationService
             $r->update(['statut' => 'terminee']);
 
             $this->envoyerAvecEmail($r->client_id, 'reservation_terminee', [
-                'salon'   => $r->salon->nom_salon,
+                'salon' => $r->salon->nom_salon,
                 'service' => $r->service->nom_service,
-                'date'    => $r->date_heure->translatedFormat('D d M Y'),
-                'heure'   => $r->date_heure->format('H:i'),
+                'date' => $r->date_heure->translatedFormat('D d M Y'),
+                'heure' => $r->date_heure->format('H:i'),
             ], $r);
 
             Log::info('Reservation terminee automatiquement', ['reservation_id' => $r->id, 'client_id' => $r->client_id]);
@@ -171,7 +173,7 @@ class NotificationService
     public function envoyerRappels24h(): int
     {
         $debut = now()->addHours(22);
-        $fin   = now()->addHours(26);
+        $fin = now()->addHours(26);
 
         $reservations = Reservation::where('statut', 'confirmee')
             ->where('rappel_24h', false)
@@ -187,8 +189,8 @@ class NotificationService
         foreach ($reservations as $r) {
             /** @var Reservation $r */
             $this->envoyerAvecEmail($r->client_id, 'rappel_24h', [
-                'salon'   => $r->salon->nom_salon,
-                'heure'   => $r->date_heure->format('H:i'),
+                'salon' => $r->salon->nom_salon,
+                'heure' => $r->date_heure->format('H:i'),
                 'service' => $r->service->nom_service,
             ], $r);
 
@@ -196,8 +198,8 @@ class NotificationService
 
             Log::info('Rappel 24h envoye', [
                 'reservation_id' => $r->id,
-                'client_id'      => $r->client_id,
-                'date_heure'     => $r->date_heure->toDateTimeString(),
+                'client_id' => $r->client_id,
+                'date_heure' => $r->date_heure->toDateTimeString(),
             ]);
         }
 
@@ -210,7 +212,7 @@ class NotificationService
     public function envoyerRappels2h(): int
     {
         $debut = now()->addHour();
-        $fin   = now()->addHours(3);
+        $fin = now()->addHours(3);
 
         $reservations = Reservation::where('statut', 'confirmee')
             ->where('rappel_2h', false)
@@ -226,8 +228,8 @@ class NotificationService
         foreach ($reservations as $r) {
             /** @var Reservation $r */
             $this->envoyerAvecEmail($r->client_id, 'rappel_2h', [
-                'salon'   => $r->salon->nom_salon,
-                'heure'   => $r->date_heure->format('H:i'),
+                'salon' => $r->salon->nom_salon,
+                'heure' => $r->date_heure->format('H:i'),
                 'service' => $r->service->nom_service,
             ], $r);
 
@@ -235,8 +237,8 @@ class NotificationService
 
             Log::info('Rappel 2h envoye', [
                 'reservation_id' => $r->id,
-                'client_id'      => $r->client_id,
-                'date_heure'     => $r->date_heure->toDateTimeString(),
+                'client_id' => $r->client_id,
+                'date_heure' => $r->date_heure->toDateTimeString(),
             ]);
         }
 
@@ -255,6 +257,7 @@ class NotificationService
                 Log::warning('notifierReponseAvis : réservation ou client introuvable', [
                     'avis_id' => $avis->id,
                 ]);
+
                 return;
             }
 
@@ -288,19 +291,20 @@ class NotificationService
                 Log::warning('notifierNouvelAvis : réservation ou salon introuvable', [
                     'avis_id' => $avis->id,
                 ]);
+
                 return;
             }
 
-            $salon      = $reservation->salon;
-            $proprio    = $salon->user;
-            $client     = $reservation->client;
-            $nomClient  = $client
-                ? trim(($client->prenom ?? 'Client') . ' ' . substr($client->nom ?? '', 0, 1) . '.')
+            $salon = $reservation->salon;
+            $proprio = $salon->user;
+            $client = $reservation->client;
+            $nomClient = $client
+                ? trim(($client->prenom ?? 'Client').' '.substr($client->nom ?? '', 0, 1).'.')
                 : 'Un client';
 
             if ($proprio) {
                 $this->envoyer($proprio->id, 'nouvel_avis', [
-                    'note'   => (string) $avis->note,
+                    'note' => (string) $avis->note,
                     'client' => $nomClient,
                 ]);
 

@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Salon;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ServiceController extends Controller
 {
@@ -24,7 +25,7 @@ class ServiceController extends Controller
     */
     public function index(): View
     {
-        $salon    = $this->salon();
+        $salon = $this->salon();
         $services = Service::where('salon_id', $salon->id)
             ->orderBy('categorie')
             ->orderBy('nom_service')
@@ -44,6 +45,7 @@ class ServiceController extends Controller
     public function create(): View
     {
         $salon = $this->salon();
+
         return view('salon.services_form', compact('salon'));
     }
 
@@ -59,18 +61,18 @@ class ServiceController extends Controller
         $data = $request->validate([
             'nom_service' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
-            'prix'        => ['required', 'numeric', 'min:0', 'max:99999'],
-            'duree_minu'  => ['required', 'integer', 'min:10', 'max:480'],
-            'categorie'   => ['required', 'string', 'max:60'],
-            'image'       => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            'prix' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'duree_minu' => ['required', 'integer', 'min:10', 'max:480'],
+            'categorie' => ['required', 'string', 'max:60'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
         ], [
             'nom_service.required' => 'Le nom du service est obligatoire.',
-            'prix.required'        => 'Le prix est obligatoire.',
-            'duree_minu.required'  => 'La durée est obligatoire.',
-            'categorie.required'   => 'La catégorie est obligatoire.',
-            'image.image'          => "Le fichier doit être une image.",
-            'image.mimes'          => "Formats acceptés : JPG, PNG, WEBP.",
-            'image.max'            => "L'image ne doit pas dépasser 5 Mo.",
+            'prix.required' => 'Le prix est obligatoire.',
+            'duree_minu.required' => 'La durée est obligatoire.',
+            'categorie.required' => 'La catégorie est obligatoire.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'Formats acceptés : JPG, PNG, WEBP.',
+            'image.max' => "L'image ne doit pas dépasser 5 Mo.",
         ]);
 
         if ($request->hasFile('image')) {
@@ -80,12 +82,12 @@ class ServiceController extends Controller
         }
 
         $data['salon_id'] = $salon->id;
-        $data['actif']    = $request->boolean('actif');
+        $data['actif'] = $request->boolean('actif');
 
         Service::create($data);
 
         return redirect()->route('salon.services.index')
-            ->with('success', 'Service "' . $data['nom_service'] . '" créé avec succès.');
+            ->with('success', 'Service "'.$data['nom_service'].'" créé avec succès.');
     }
 
     /*
@@ -95,7 +97,7 @@ class ServiceController extends Controller
     */
     public function edit(int $id): View
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $service = Service::where('salon_id', $salon->id)->findOrFail($id);
 
         return view('salon.services_form', compact('salon', 'service'));
@@ -108,20 +110,20 @@ class ServiceController extends Controller
     */
     public function update(Request $request, int $id): RedirectResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $service = Service::where('salon_id', $salon->id)->findOrFail($id);
 
         $data = $request->validate([
             'nom_service' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
-            'prix'        => ['required', 'numeric', 'min:0', 'max:99999'],
-            'duree_minu'  => ['required', 'integer', 'min:10', 'max:480'],
-            'categorie'   => ['required', 'string', 'max:60'],
-            'image'       => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+            'prix' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'duree_minu' => ['required', 'integer', 'min:10', 'max:480'],
+            'categorie' => ['required', 'string', 'max:60'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
         ], [
-            'image.image' => "Le fichier doit être une image.",
-            'image.mimes' => "Formats acceptés : JPG, PNG, WEBP.",
-            'image.max'   => "L'image ne doit pas dépasser 5 Mo.",
+            'image.image' => 'Le fichier doit être une image.',
+            'image.mimes' => 'Formats acceptés : JPG, PNG, WEBP.',
+            'image.max' => "L'image ne doit pas dépasser 5 Mo.",
         ]);
 
         if ($request->boolean('image_supprimer') && $service->image) {
@@ -150,7 +152,7 @@ class ServiceController extends Controller
     */
     public function destroy(int $id): RedirectResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $service = Service::where('salon_id', $salon->id)->findOrFail($id);
 
         // Vérifier qu'aucune réservation future ne dépend de ce service
@@ -180,14 +182,14 @@ class ServiceController extends Controller
     | POST rapide — activer / désactiver (appelé en AJAX)
     |------------------------------------------------------------------
     */
-    public function toggleActif(int $id): \Illuminate\Http\JsonResponse
+    public function toggleActif(int $id): JsonResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $service = Service::where('salon_id', $salon->id)->findOrFail($id);
         $service->update(['actif' => ! $service->actif]);
 
         return response()->json([
-            'actif'   => $service->actif,
+            'actif' => $service->actif,
             'message' => $service->actif ? 'Service activé.' : 'Service désactivé.',
         ]);
     }

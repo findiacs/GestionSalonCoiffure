@@ -11,28 +11,36 @@ class Ville extends Model
 {
     use HasFactory;
 
-    protected $table  = 'villes';
+    protected $table = 'villes';
+
     public $timestamps = false;
 
-    protected $fillable = ['nom_ville','code_postal','region','pays','actif'];
+    protected $fillable = ['nom_ville', 'code_postal', 'region', 'pays', 'actif'];
 
     protected $casts = [
-        'actif'   => 'boolean',
+        'actif' => 'boolean',
         'cree_le' => 'datetime',
     ];
 
     // ── Scopes ─────────────────────────────────────────────────────
-    public function scopeActives($q)    { return $q->where('actif', true); }
-    public function scopeAvecSalons($q) {
-        return $q->whereHas('salons', fn($s) => $s->where('valide', 1));
+    public function scopeActives($q)
+    {
+        return $q->where('actif', true);
+    }
+
+    public function scopeAvecSalons($q)
+    {
+        return $q->whereHas('salons', fn ($s) => $s->where('valide', 1));
     }
 
     // ── Relations ──────────────────────────────────────────────────
-    public function salons(): HasMany {
+    public function salons(): HasMany
+    {
         return $this->hasMany(Salon::class, 'ville_id');
     }
 
-    public function salonsValides(): HasMany {
+    public function salonsValides(): HasMany
+    {
         return $this->hasMany(Salon::class, 'ville_id')->where('valide', 1);
     }
 
@@ -40,7 +48,7 @@ class Ville extends Model
     {
         $filename = $this->findPhotoFilename();
         if ($filename) {
-            return asset('images/' . $filename);
+            return asset('images/'.$filename);
         }
 
         return asset('images/salon-placeholder.jpg');
@@ -74,6 +82,7 @@ class Ville extends Model
                     if (! file_exists($publicPath)) {
                         @copy($rootPath, $publicPath);
                     }
+
                     return "{$name}.{$ext}";
                 }
             }
@@ -82,10 +91,11 @@ class Ville extends Model
         $rootMatch = $this->findMatchingImageInDirectory(base_path('images'), $this->nom_ville);
         if ($rootMatch) {
             $filename = basename($rootMatch);
-            $publicPath = public_path('images/' . $filename);
+            $publicPath = public_path('images/'.$filename);
             if (! file_exists($publicPath)) {
                 @copy($rootMatch, $publicPath);
             }
+
             return $filename;
         }
 
@@ -102,7 +112,7 @@ class Ville extends Model
         $extensions = ['jpg', 'jpeg', 'png', 'webp'];
 
         foreach (scandir($directory) as $filename) {
-            $path = $directory . DIRECTORY_SEPARATOR . $filename;
+            $path = $directory.DIRECTORY_SEPARATOR.$filename;
             if (! is_file($path)) {
                 continue;
             }

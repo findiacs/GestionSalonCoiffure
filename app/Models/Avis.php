@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Avis extends Model
 {
@@ -20,7 +21,7 @@ class Avis extends Model
     ];
 
     protected $casts = [
-        'note'       => 'integer',
+        'note' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -30,7 +31,7 @@ class Avis extends Model
     /** Retourne "★★★★☆" selon la note */
     public function getEtoilesAttribute(): string
     {
-        return str_repeat('★', $this->note) . str_repeat('☆', 5 - $this->note);
+        return str_repeat('★', $this->note).str_repeat('☆', 5 - $this->note);
     }
 
     public function aReponse(): bool
@@ -39,20 +40,24 @@ class Avis extends Model
     }
 
     // ── Scopes ─────────────────────────────────────────────────────
-    public function scopeParNote($q, int $note) {
+    public function scopeParNote($q, int $note)
+    {
         return $q->where('note', $note);
     }
-    public function scopeSansReponse($q) {
+
+    public function scopeSansReponse($q)
+    {
         return $q->whereNull('reponse_salon');
     }
 
     // ── Relations ──────────────────────────────────────────────────
-    public function reservation(): BelongsTo {
+    public function reservation(): BelongsTo
+    {
         return $this->belongsTo(Reservation::class, 'reservation_id');
     }
 
     /** Raccourci vers le client (via réservation) */
-    public function client(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    public function client(): HasOneThrough
     {
         return $this->hasOneThrough(
             User::class,

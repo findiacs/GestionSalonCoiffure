@@ -6,15 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Avis;
 use App\Models\Reservation;
 use App\Services\NotificationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class AvisController extends Controller
 {
     public function __construct(private NotificationService $notifService) {}
-
 
     /*
     |------------------------------------------------------------------
@@ -23,12 +22,11 @@ class AvisController extends Controller
     */
     public function index(): View
     {
-        $avis = Avis::whereHas('reservation', fn($q) =>
-                    $q->where('client_id', Auth::id())
-                )
-                ->with(['reservation.salon.ville', 'reservation.service'])
-                ->latest()
-                ->paginate(10);
+        $avis = Avis::whereHas('reservation', fn ($q) => $q->where('client_id', Auth::id())
+        )
+            ->with(['reservation.salon.ville', 'reservation.service'])
+            ->latest()
+            ->paginate(10);
 
         return view('client.mes_avis', compact('avis'));
     }
@@ -42,9 +40,9 @@ class AvisController extends Controller
     {
         $reservation = Reservation::with(['salon.ville', 'service', 'employe'])
             ->where('client_id', Auth::id())
-            ->where(fn($q) => $q
+            ->where(fn ($q) => $q
                 ->where('statut', 'terminee')
-                ->orWhere(fn($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
+                ->orWhere(fn ($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
             )
             ->doesntHave('avis')
             ->findOrFail($reservation);
@@ -61,19 +59,19 @@ class AvisController extends Controller
     {
         $request->validate([
             'reservation_id' => ['required', 'exists:reservations,id'],
-            'note'           => ['required', 'integer', 'between:1,5'],
-            'commentaire'    => ['nullable', 'string', 'max:1000'],
+            'note' => ['required', 'integer', 'between:1,5'],
+            'commentaire' => ['nullable', 'string', 'max:1000'],
         ], [
-            'note.required'  => 'Veuillez attribuer une note.',
-            'note.between'   => 'La note doit être entre 1 et 5.',
+            'note.required' => 'Veuillez attribuer une note.',
+            'note.between' => 'La note doit être entre 1 et 5.',
         ]);
 
         // Double vérification sécurité
         $reservation = Reservation::with('salon')
             ->where('client_id', Auth::id())
-            ->where(fn($q) => $q
+            ->where(fn ($q) => $q
                 ->where('statut', 'terminee')
-                ->orWhere(fn($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
+                ->orWhere(fn ($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
             )
             ->doesntHave('avis')
             ->findOrFail($request->reservation_id);
@@ -86,8 +84,8 @@ class AvisController extends Controller
         // Créer l'avis
         $avis = Avis::create([
             'reservation_id' => $reservation->id,
-            'note'           => $request->note,
-            'commentaire'    => $request->commentaire,
+            'note' => $request->note,
+            'commentaire' => $request->commentaire,
         ]);
 
         // Recalculer note_moy et nb_avis du salon

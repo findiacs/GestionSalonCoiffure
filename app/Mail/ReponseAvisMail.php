@@ -14,29 +14,35 @@ class ReponseAvisMail extends Mailable
     use Queueable, SerializesModels;
 
     public string $prenomClient;
+
     public string $nomSalon;
-    public int    $note;
+
+    public int $note;
+
     public string $etoiles;
+
     public ?string $commentaireClient;
-    public string  $reponseSalon;
-    public string  $urlReservations;
+
+    public string $reponseSalon;
+
+    public string $urlReservations;
 
     public function __construct(Avis $avis)
     {
-        $reservation             = $avis->reservation;
-        $this->prenomClient      = $reservation->client->prenom;
-        $this->nomSalon          = $reservation->salon->nom_salon;
-        $this->note              = $avis->note;
-        $this->etoiles           = str_repeat('★', $avis->note) . str_repeat('☆', 5 - $avis->note);
+        $reservation = $avis->reservation;
+        $this->prenomClient = $reservation->client->prenom;
+        $this->nomSalon = $reservation->salon->nom_salon;
+        $this->note = $avis->note;
+        $this->etoiles = str_repeat('★', $avis->note).str_repeat('☆', 5 - $avis->note);
         $this->commentaireClient = $avis->commentaire;
-        $this->reponseSalon      = $avis->reponse_salon;
-        $this->urlReservations   = url('/client/reservations');
+        $this->reponseSalon = $avis->reponse_salon;
+        $this->urlReservations = url('/client/reservations');
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '💬 ' . $this->nomSalon . ' a répondu à votre avis',
+            subject: '💬 '.$this->nomSalon.' a répondu à votre avis',
         );
     }
 

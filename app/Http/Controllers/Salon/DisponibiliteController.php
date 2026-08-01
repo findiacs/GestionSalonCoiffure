@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\DisponibiliteException;
 use App\Models\Employe;
 use App\Models\Reservation;
+use App\Models\Salon;
 use App\Services\GestionnaireDisponibilite;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class DisponibiliteController extends Controller
 {
@@ -30,7 +32,7 @@ class DisponibiliteController extends Controller
         $salon = $this->salon();
 
         $debutSemaine = $request->filled('debut')
-            ? \Carbon\Carbon::parse($request->debut)->startOfWeek()
+            ? Carbon::parse($request->debut)->startOfWeek()
             : now()->startOfWeek();
 
         $finSemaine = $debutSemaine->copy()->endOfWeek();
@@ -49,9 +51,9 @@ class DisponibiliteController extends Controller
             $reservations = $reservations->where('employe_id', $employeFiltre);
         }
 
-        $calendrier     = $this->organiserParJour($reservations, $debutSemaine);
+        $calendrier = $this->organiserParJour($reservations, $debutSemaine);
         $tauxOccupation = $this->gestionnaire->tauxOccupation($salon, $debutSemaine, $finSemaine);
-        $caEstime       = $reservations->sum(fn($r) => $r->service->prix ?? 0);
+        $caEstime = $reservations->sum(fn ($r) => $r->service->prix ?? 0);
 
         $exceptions = DisponibiliteException::where('salon_id', $salon->id)
             ->where('date', '>=', now()->toDateString())
@@ -71,15 +73,15 @@ class DisponibiliteController extends Controller
     public function creneaux(Request $request): JsonResponse
     {
         $request->validate([
-            'salon_id'   => ['required', 'exists:salons,id'],
+            'salon_id' => ['required', 'exists:salons,id'],
             'service_id' => ['required', 'exists:services,id'],
-            'date'       => ['required', 'date'],
+            'date' => ['required', 'date'],
             'employe_id' => ['nullable', 'exists:employes,id'],
         ]);
 
-        $salon   = \App\Models\Salon::valides()->findOrFail($request->salon_id);
+        $salon = Salon::valides()->findOrFail($request->salon_id);
         $service = $salon->servicesActifs()->findOrFail($request->service_id);
-        $date    = \Carbon\Carbon::parse($request->date);
+        $date = Carbon::parse($request->date);
 
         $creneaux = $this->gestionnaire->creneauxDuJour(
             $salon,
@@ -99,26 +101,26 @@ class DisponibiliteController extends Controller
         $request->validate([
             'employe_id' => ['required', 'exists:employes,id'],
             'date_heure' => ['required', 'date', 'after:now'],
-            'duree'      => ['required', 'integer', 'min:15', 'max:480'],
-            'motif'      => ['nullable', 'string', 'max:120'],
+            'duree' => ['required', 'integer', 'min:15', 'max:480'],
+            'motif' => ['nullable', 'string', 'max:120'],
         ]);
 
         $employe = Employe::where('salon_id', $salon->id)
             ->findOrFail($request->employe_id);
 
         Reservation::create([
-            'client_id'     => Auth::id(),
-            'salon_id'      => $salon->id,
-            'service_id'    => $salon->servicesActifs()->first()->id,
-            'employe_id'    => $employe->id,
-            'date_heure'    => $request->date_heure,
+            'client_id' => Auth::id(),
+            'salon_id' => $salon->id,
+            'service_id' => $salon->servicesActifs()->first()->id,
+            'employe_id' => $employe->id,
+            'date_heure' => $request->date_heure,
             'duree_minutes' => $request->duree,
-            'statut'        => 'confirmee',
-            'notes_salon'   => '__bloque__',
-            'notes_client'  => $request->motif ?? 'Créneau bloqué',
+            'statut' => 'confirmee',
+            'notes_salon' => '__bloque__',
+            'notes_client' => $request->motif ?? 'Créneau bloqué',
         ]);
 
-        return back()->with('success', 'Créneau bloqué pour ' . $employe->nomComplet() . '.');
+        return back()->with('success', 'Créneau bloqué pour '.$employe->nomComplet().'.');
     }
 
     public function debloquer(int $id): RedirectResponse
@@ -143,14 +145,14 @@ class DisponibiliteController extends Controller
     {
         $salon = $this->salon();
 
-        $jours    = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+        $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
         $horaires = [];
 
         foreach ($jours as $jour) {
             $ferme = $request->boolean("h_{$jour}_ferme", false);
             $horaires[$jour] = [
                 'debut' => $ferme ? null : $request->input("h_{$jour}_debut"),
-                'fin'   => $ferme ? null : $request->input("h_{$jour}_fin"),
+                'fin' => $ferme ? null : $request->input("h_{$jour}_fin"),
                 'ferme' => $ferme,
             ];
         }
@@ -167,17 +169,17 @@ class DisponibiliteController extends Controller
     */
     public function updateEmployeHoraires(Request $request, int $id): RedirectResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $employe = Employe::where('salon_id', $salon->id)->findOrFail($id);
 
-        $jours    = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+        $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
         $horaires = [];
 
         foreach ($jours as $jour) {
             $ferme = $request->boolean("h_{$jour}_ferme", false);
             $horaires[$jour] = [
                 'debut' => $ferme ? null : $request->input("h_{$jour}_debut"),
-                'fin'   => $ferme ? null : $request->input("h_{$jour}_fin"),
+                'fin' => $ferme ? null : $request->input("h_{$jour}_fin"),
                 'ferme' => $ferme,
             ];
         }
@@ -185,7 +187,7 @@ class DisponibiliteController extends Controller
         $employe->horaires = $horaires;
         $employe->save();
 
-        return back()->with('success', 'Horaires de ' . $employe->nomComplet() . ' mis à jour.');
+        return back()->with('success', 'Horaires de '.$employe->nomComplet().' mis à jour.');
     }
 
     /*
@@ -199,28 +201,30 @@ class DisponibiliteController extends Controller
 
         $data = $request->validate([
             'employe_id' => ['nullable', 'exists:employes,id'],
-            'date'       => ['required', 'date', 'after_or_equal:today'],
-            'ferme'      => ['nullable', 'boolean'],
-            'debut'      => ['nullable', 'date_format:H:i'],
-            'fin'        => ['nullable', 'date_format:H:i', 'after:debut'],
-            'motif'      => ['nullable', 'string', 'max:160'],
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'ferme' => ['nullable', 'boolean'],
+            'debut' => ['nullable', 'date_format:H:i'],
+            'fin' => ['nullable', 'date_format:H:i', 'after:debut'],
+            'motif' => ['nullable', 'string', 'max:160'],
         ]);
 
         if ($data['employe_id'] ?? null) {
             $exists = Employe::where('salon_id', $salon->id)->where('id', $data['employe_id'])->exists();
-            if (! $exists) abort(403);
+            if (! $exists) {
+                abort(403);
+            }
         }
 
         $ferme = (bool) ($data['ferme'] ?? false);
 
         DisponibiliteException::create([
-            'salon_id'   => $salon->id,
+            'salon_id' => $salon->id,
             'employe_id' => $data['employe_id'] ?? null,
-            'date'       => $data['date'],
-            'ferme'      => $ferme,
-            'debut'      => $ferme ? null : ($data['debut'] ?? null),
-            'fin'        => $ferme ? null : ($data['fin']   ?? null),
-            'motif'      => $data['motif'] ?? null,
+            'date' => $data['date'],
+            'ferme' => $ferme,
+            'debut' => $ferme ? null : ($data['debut'] ?? null),
+            'fin' => $ferme ? null : ($data['fin'] ?? null),
+            'motif' => $data['motif'] ?? null,
         ]);
 
         return back()->with('success', 'Exception enregistrée.');
@@ -236,16 +240,15 @@ class DisponibiliteController extends Controller
         return back()->with('success', 'Exception supprimée.');
     }
 
-    private function organiserParJour($reservations, \Carbon\Carbon $debutSemaine): array
+    private function organiserParJour($reservations, Carbon $debutSemaine): array
     {
         $calendrier = [];
 
         for ($i = 0; $i < 7; $i++) {
             $date = $debutSemaine->copy()->addDays($i);
             $calendrier[$date->format('Y-m-d')] = [
-                'date'         => $date,
-                'reservations' => $reservations->filter(fn($r) =>
-                    $r->date_heure->toDateString() === $date->toDateString()
+                'date' => $date,
+                'reservations' => $reservations->filter(fn ($r) => $r->date_heure->toDateString() === $date->toDateString()
                 )->values(),
             ];
         }

@@ -28,6 +28,6 @@ class VilleSeeder extends Seeder
             DB::table('villes')->insertOrIgnore(array_merge($v, ['pays' => 'Maroc']));
         }
 
-        $this->command->info('✓ VilleSeeder : ' . count($villes) . ' villes insérées.');
+        $this->command->info('✓ VilleSeeder : '.count($villes).' villes insérées.');
     }
 }
