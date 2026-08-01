@@ -38,13 +38,13 @@ class Salon extends Model
     ];
 
     protected $casts = [
-        'note_moy'   => 'decimal:2',
-        'valide'     => 'integer',
+        'note_moy' => 'decimal:2',
+        'valide' => 'integer',
         'date_valid' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'latitude'   => 'decimal:7',
-        'longitude'  => 'decimal:7',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
     ];
 
     /*
@@ -61,9 +61,9 @@ class Salon extends Model
     /** Trouver un salon par ville + slug */
     public static function findBySlug(string $villeNom, string $slug): ?self
     {
-        return self::whereHas('ville', fn($q) => $q->where('nom_ville', 'like', $villeNom))
-                   ->get()
-                   ->first(fn($s) => Str::slug($s->nom_salon) === $slug);
+        return self::whereHas('ville', fn ($q) => $q->where('nom_ville', 'like', $villeNom))
+            ->get()
+            ->first(fn ($s) => Str::slug($s->nom_salon) === $slug);
     }
 
     /*
@@ -72,15 +72,26 @@ class Salon extends Model
     |------------------------------------------------------------------
     */
 
-    public function estValide(): bool   { return $this->valide === 1; }
-    public function estEnAttente(): bool { return $this->valide === 0; }
-    public function estSuspendu(): bool  { return $this->valide === -1; }
+    public function estValide(): bool
+    {
+        return $this->valide === 1;
+    }
+
+    public function estEnAttente(): bool
+    {
+        return $this->valide === 0;
+    }
+
+    public function estSuspendu(): bool
+    {
+        return $this->valide === -1;
+    }
 
     public function libelleStatut(): string
     {
-        return match($this->valide) {
-            1  => 'Validé',
-            0  => 'En attente',
+        return match ($this->valide) {
+            1 => 'Validé',
+            0 => 'En attente',
             -1 => 'Suspendu',
             default => 'Inconnu',
         };
@@ -95,15 +106,19 @@ class Salon extends Model
     /** Accesseur : toujours retourner un tableau PHP (gère double-encodage JSON) */
     public function getHorairesAttribute(mixed $value): mixed
     {
-        if (is_array($value)) return $value;
+        if (is_array($value)) {
+            return $value;
+        }
         if (is_string($value) && $value !== '') {
             $decoded = json_decode($value, true);
             // Double-encodé : premier decode donne une string, second donne l'array
             if (is_string($decoded)) {
                 $decoded = json_decode($decoded, true);
             }
+
             return is_array($decoded) ? $decoded : [];
         }
+
         return [];
     }
 
@@ -117,6 +132,7 @@ class Salon extends Model
         if (! $horaires || ! isset($horaires[$jour])) {
             return false;
         }
+
         return ! ($horaires[$jour]['ferme'] ?? true);
     }
 
@@ -137,15 +153,20 @@ class Salon extends Model
     /** Vérifie si le salon est actuellement ouvert (jour + heure) */
     public function estOuvertMaintenant(): bool
     {
-        $jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+        $jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
         $jourActuel = $jours[now()->dayOfWeek];
-        if (! $this->estOuvert($jourActuel)) return false;
+        if (! $this->estOuvert($jourActuel)) {
+            return false;
+        }
 
         $maintenant = now()->format('H:i');
         $debut = $this->heureOuverture($jourActuel);
-        $fin   = $this->heureFermeture($jourActuel);
+        $fin = $this->heureFermeture($jourActuel);
 
-        if (! $debut || ! $fin) return false;
+        if (! $debut || ! $fin) {
+            return false;
+        }
+
         return $maintenant >= $debut && $maintenant <= $fin;
     }
 
@@ -163,22 +184,23 @@ class Salon extends Model
     private function resolvePhotoUrl(?string $photo, string $defaultAsset): string
     {
         if ($photo) {
-            $storagePath = storage_path('app/public/' . $photo);
+            $storagePath = storage_path('app/public/'.$photo);
             if (file_exists($storagePath)) {
-                return asset('storage/' . $photo);
+                return asset('storage/'.$photo);
             }
 
-            $publicPath = public_path('images/' . $photo);
+            $publicPath = public_path('images/'.$photo);
             if (file_exists($publicPath)) {
-                return asset('images/' . $photo);
+                return asset('images/'.$photo);
             }
 
-            $rootPath = base_path('images/' . $photo);
+            $rootPath = base_path('images/'.$photo);
             if (file_exists($rootPath)) {
                 if (! file_exists($publicPath)) {
                     @copy($rootPath, $publicPath);
                 }
-                return asset('images/' . $photo);
+
+                return asset('images/'.$photo);
             }
         }
 
@@ -244,9 +266,9 @@ class Salon extends Model
     public function servicesActifs(): HasMany
     {
         return $this->hasMany(Service::class, 'salon_id')
-                    ->where('actif', 1)
-                    ->orderBy('categorie')
-                    ->orderBy('prix');
+            ->where('actif', 1)
+            ->orderBy('categorie')
+            ->orderBy('prix');
     }
 
     /** Employés */
@@ -271,9 +293,9 @@ class Salon extends Model
     public function reservationsAVenir(): HasMany
     {
         return $this->hasMany(Reservation::class, 'salon_id')
-                    ->whereIn('statut', ['en_attente', 'confirmee'])
-                    ->where('date_heure', '>=', now())
-                    ->orderBy('date_heure');
+            ->whereIn('statut', ['en_attente', 'confirmee'])
+            ->where('date_heure', '>=', now())
+            ->orderBy('date_heure');
     }
 
     /** Avis du salon — passent par la table reservations (pas de salon_id direct sur avis) */
@@ -303,7 +325,7 @@ class Salon extends Model
             ->first();
 
         $this->update([
-            'nb_avis'  => (int) ($stats->nb ?? 0),
+            'nb_avis' => (int) ($stats->nb ?? 0),
             'note_moy' => $stats && $stats->nb > 0 ? round((float) $stats->moy, 2) : 0,
         ]);
     }

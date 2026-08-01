@@ -33,19 +33,19 @@ class UserController extends Controller
         }
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nom', 'like', '%' . $request->q . '%')
-                  ->orWhere('prenom', 'like', '%' . $request->q . '%')
-                  ->orWhere('email', 'like', '%' . $request->q . '%');
+                $q->where('nom', 'like', '%'.$request->q.'%')
+                    ->orWhere('prenom', 'like', '%'.$request->q.'%')
+                    ->orWhere('email', 'like', '%'.$request->q.'%');
             });
         }
 
         $users = $query->latest()->paginate(20)->withQueryString();
 
         $compteurs = [
-            'total'  => User::count(),
+            'total' => User::count(),
             'clients' => User::where('role', 'client')->count(),
-            'salons'  => User::where('role', 'salon')->count(),
-            'admins'  => User::where('role', 'admin')->count(),
+            'salons' => User::where('role', 'salon')->count(),
+            'admins' => User::where('role', 'admin')->count(),
         ];
 
         return view('admin.users', compact('users', 'compteurs'));
@@ -54,31 +54,32 @@ class UserController extends Controller
     public function create(): View
     {
         $villes = Ville::orderBy('nom_ville')->get();
+
         return view('admin.user_form', ['user' => null, 'villes' => $villes]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'nom'          => ['required', 'string', 'max:80'],
-            'prenom'       => ['required', 'string', 'max:80'],
-            'email'        => ['required', 'email', 'unique:users,email'],
-            'role'         => ['required', 'in:admin,salon,client'],
+            'nom' => ['required', 'string', 'max:80'],
+            'prenom' => ['required', 'string', 'max:80'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'role' => ['required', 'in:admin,salon,client'],
             'mot_de_passe' => ['required', Password::min(8)],
-            'telephone'    => ['nullable', 'string', 'max:20'],
-            'ville_id'     => ['nullable', 'exists:villes,id'],
-            'quartier'     => ['nullable', 'string', 'max:80'],
+            'telephone' => ['nullable', 'string', 'max:20'],
+            'ville_id' => ['nullable', 'exists:villes,id'],
+            'quartier' => ['nullable', 'string', 'max:80'],
         ]);
 
         $user = User::create([
-            'nom'              => $data['nom'],
-            'prenom'           => $data['prenom'],
-            'email'            => $data['email'],
-            'role'             => $data['role'],
-            'mot_de_passe'     => Hash::make($data['mot_de_passe']),
-            'telephone'        => $data['telephone'] ?? null,
-            'ville_id'         => $data['ville_id'] ?? null,
-            'quartier'         => $data['quartier'] ?? null,
+            'nom' => $data['nom'],
+            'prenom' => $data['prenom'],
+            'email' => $data['email'],
+            'role' => $data['role'],
+            'mot_de_passe' => Hash::make($data['mot_de_passe']),
+            'telephone' => $data['telephone'] ?? null,
+            'ville_id' => $data['ville_id'] ?? null,
+            'quartier' => $data['quartier'] ?? null,
             'email_verifie_le' => $request->boolean('email_verifie') ? now() : null,
         ]);
 
@@ -104,18 +105,18 @@ class UserController extends Controller
 
         if ($user->isClient()) {
             $stats = [
-                'reservations'  => $user->reservations->count(),
-                'confirmees'    => $user->reservations->where('statut', 'confirmee')->count(),
-                'terminees'     => $user->reservations->where('statut', 'terminee')->count(),
-                'annulees'      => $user->reservations->where('statut', 'annulee')->count(),
+                'reservations' => $user->reservations->count(),
+                'confirmees' => $user->reservations->where('statut', 'confirmee')->count(),
+                'terminees' => $user->reservations->where('statut', 'terminee')->count(),
+                'annulees' => $user->reservations->where('statut', 'annulee')->count(),
                 'notifications' => $user->notifications->count(),
             ];
         } elseif ($user->isSalon() && $user->salon) {
             $stats = [
                 'reservations' => $user->salon->reservations()->count(),
-                'services'     => $user->salon->services->count(),
-                'employes'     => $user->salon->employes->count(),
-                'avis'         => $user->salon->nb_avis,
+                'services' => $user->salon->services->count(),
+                'employes' => $user->salon->employes->count(),
+                'avis' => $user->salon->nb_avis,
             ];
         }
 
@@ -124,8 +125,9 @@ class UserController extends Controller
 
     public function edit(int $id): View
     {
-        $user   = User::findOrFail($id);
+        $user = User::findOrFail($id);
         $villes = Ville::orderBy('nom_ville')->get();
+
         return view('admin.user_form', compact('user', 'villes'));
     }
 
@@ -134,24 +136,24 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $data = $request->validate([
-            'nom'          => ['required', 'string', 'max:80'],
-            'prenom'       => ['required', 'string', 'max:80'],
-            'email'        => ['required', 'email', 'unique:users,email,' . $user->id],
-            'role'         => ['required', 'in:admin,salon,client'],
-            'telephone'    => ['nullable', 'string', 'max:20'],
-            'ville_id'     => ['nullable', 'exists:villes,id'],
-            'quartier'     => ['nullable', 'string', 'max:80'],
+            'nom' => ['required', 'string', 'max:80'],
+            'prenom' => ['required', 'string', 'max:80'],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'role' => ['required', 'in:admin,salon,client'],
+            'telephone' => ['nullable', 'string', 'max:20'],
+            'ville_id' => ['nullable', 'exists:villes,id'],
+            'quartier' => ['nullable', 'string', 'max:80'],
             'mot_de_passe' => ['nullable', Password::min(8)],
         ]);
 
         $updatable = [
-            'nom'       => $data['nom'],
-            'prenom'    => $data['prenom'],
-            'email'     => $data['email'],
-            'role'      => $data['role'],
+            'nom' => $data['nom'],
+            'prenom' => $data['prenom'],
+            'email' => $data['email'],
+            'role' => $data['role'],
             'telephone' => $data['telephone'] ?? null,
-            'ville_id'  => $data['ville_id'] ?? null,
-            'quartier'  => $data['quartier'] ?? null,
+            'ville_id' => $data['ville_id'] ?? null,
+            'quartier' => $data['quartier'] ?? null,
         ];
 
         if (! empty($data['mot_de_passe'])) {

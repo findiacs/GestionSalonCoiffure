@@ -1,7 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Salon\DisponibiliteController;
+use App\Models\Employe;
+use App\Models\Salon;
+use App\Services\GestionnaireDisponibilite;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,28 +38,28 @@ Route::get('/disponibilites', [DisponibiliteController::class, 'creneaux'])
 | POST /api/disponibilites/verifier
 |--------------------------------------------------------------------------
 */
-Route::post('/disponibilites/verifier', function (\Illuminate\Http\Request $request) {
+Route::post('/disponibilites/verifier', function (Request $request) {
     $request->validate([
-        'salon_id'   => ['required', 'exists:salons,id'],
+        'salon_id' => ['required', 'exists:salons,id'],
         'service_id' => ['required', 'exists:services,id'],
         'date_heure' => ['required', 'date', 'after:now'],
         'employe_id' => ['nullable', 'exists:employes,id'],
     ]);
 
-    $salon   = \App\Models\Salon::valides()->findOrFail($request->salon_id);
+    $salon = Salon::valides()->findOrFail($request->salon_id);
     $service = $salon->servicesActifs()->findOrFail($request->service_id);
     $employe = $request->employe_id
-        ? \App\Models\Employe::find($request->employe_id)
+        ? Employe::find($request->employe_id)
         : null;
 
-    $dateHeure = \Carbon\Carbon::parse($request->date_heure);
+    $dateHeure = Carbon::parse($request->date_heure);
 
-    $gestionnaire = app(\App\Services\GestionnaireDisponibilite::class);
-    $disponible   = $gestionnaire->estDisponible($salon, $service, $dateHeure, $employe);
+    $gestionnaire = app(GestionnaireDisponibilite::class);
+    $disponible = $gestionnaire->estDisponible($salon, $service, $dateHeure, $employe);
 
     return response()->json([
         'disponible' => $disponible,
-        'message'    => $disponible
+        'message' => $disponible
             ? 'Créneau disponible.'
             : 'Ce créneau n\'est plus disponible.',
     ]);

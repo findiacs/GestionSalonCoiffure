@@ -27,12 +27,12 @@ class StatistiqueController extends Controller
 
         Log::info('Admin: statistiques consultees', [
             'admin_id' => Auth::id(),
-            'debut'    => $debut->toDateString(),
-            'fin'      => $fin->toDateString(),
+            'debut' => $debut->toDateString(),
+            'fin' => $fin->toDateString(),
         ]);
 
         $totalResa = Reservation::whereBetween('date_heure', [$debut, $fin])->count();
-        $annulees  = Reservation::whereBetween('date_heure', [$debut, $fin])
+        $annulees = Reservation::whereBetween('date_heure', [$debut, $fin])
             ->where('statut', 'annulee')->count();
 
         $caTotal = Reservation::whereBetween('reservations.date_heure', [$debut, $fin])
@@ -47,14 +47,14 @@ class StatistiqueController extends Controller
         $tauxAnnul = $totalResa > 0 ? round($annulees / $totalResa * 100, 1) : 0;
 
         $noteMoyRaw = Avis::whereBetween('created_at', [$debut, $fin])->avg('note');
-        $noteMoy    = $noteMoyRaw ? number_format((float) $noteMoyRaw, 1) : '—';
+        $noteMoy = $noteMoyRaw ? number_format((float) $noteMoyRaw, 1) : '—';
 
         $kpi = [
-            'total_resa'   => $totalResa,
-            'ca_total'     => $caTotal,
+            'total_resa' => $totalResa,
+            'ca_total' => $caTotal,
             'inscriptions' => $inscriptions,
-            'taux_annul'   => $tauxAnnul,
-            'note_moy'     => $noteMoy,
+            'taux_annul' => $tauxAnnul,
+            'note_moy' => $noteMoy,
             'note_moy_raw' => $noteMoyRaw ? (float) $noteMoyRaw : 0.0,
         ];
 
@@ -74,7 +74,7 @@ class StatistiqueController extends Controller
             $resaParMois[] = [
                 'label' => $cursor->translatedFormat('M Y'),
                 'value' => $count,
-                'ca'    => $ca,
+                'ca' => $ca,
             ];
             $cursor->addMonth();
         }
@@ -85,7 +85,7 @@ class StatistiqueController extends Controller
             $count = Avis::where('note', $i)->count();
             $distNotes[$i] = [
                 'count' => $count,
-                'pct'   => round($count / $totalAvis * 100),
+                'pct' => round($count / $totalAvis * 100),
             ];
         }
 
@@ -93,7 +93,7 @@ class StatistiqueController extends Controller
             ->selectRaw('COUNT(reservations.id) as nb_resa')
             ->leftJoin('reservations', function ($j) use ($debut, $fin) {
                 $j->on('reservations.salon_id', '=', 'salons.id')
-                  ->whereBetween('reservations.date_heure', [$debut, $fin]);
+                    ->whereBetween('reservations.date_heure', [$debut, $fin]);
             })
             ->groupBy('salons.id', 'salons.nom_salon')
             ->orderByDesc('nb_resa')
@@ -112,7 +112,7 @@ class StatistiqueController extends Controller
             ->leftJoin('salons', 'salons.ville_id', '=', 'villes.id')
             ->leftJoin('reservations', function ($j) use ($debut, $fin) {
                 $j->on('reservations.salon_id', '=', 'salons.id')
-                  ->whereBetween('reservations.date_heure', [$debut, $fin]);
+                    ->whereBetween('reservations.date_heure', [$debut, $fin]);
             })
             ->groupBy('villes.id', 'villes.nom_ville')
             ->orderByDesc('nb_resa')
@@ -128,12 +128,12 @@ class StatistiqueController extends Controller
     public function export(Request $request)
     {
         $debut = $request->filled('debut') ? Carbon::parse($request->debut)->startOfDay() : now()->subDays(30)->startOfDay();
-        $fin   = $request->filled('fin')   ? Carbon::parse($request->fin)->endOfDay()     : now()->endOfDay();
+        $fin = $request->filled('fin') ? Carbon::parse($request->fin)->endOfDay() : now()->endOfDay();
 
         Log::info('Admin: export CSV reservations', [
             'admin_id' => Auth::id(),
-            'debut'    => $debut->toDateString(),
-            'fin'      => $fin->toDateString(),
+            'debut' => $debut->toDateString(),
+            'fin' => $fin->toDateString(),
         ]);
 
         $reservations = Reservation::with(['client', 'salon.ville', 'service'])
@@ -145,7 +145,7 @@ class StatistiqueController extends Controller
 
         $bom = "\xEF\xBB\xBF";
 
-        $rows   = [];
+        $rows = [];
         $rows[] = ['ID', 'Client', 'Email', 'Salon', 'Ville', 'Service', 'Catégorie', 'Date', 'Heure', 'Durée (min)', 'Prix (MAD)', 'Statut'];
 
         foreach ($reservations as $r) {
@@ -168,19 +168,19 @@ class StatistiqueController extends Controller
         $csv = $bom;
         foreach ($rows as $row) {
             $csv .= implode(';', array_map(
-                fn($cell) => '"' . str_replace('"', '""', (string) $cell) . '"',
+                fn ($cell) => '"'.str_replace('"', '""', (string) $cell).'"',
                 $row
-            )) . "\r\n";
+            ))."\r\n";
         }
 
-        $filename = 'salonify-reservations-' . $debut->format('Y-m-d') . '-au-' . $fin->format('Y-m-d') . '.csv';
+        $filename = 'salonify-reservations-'.$debut->format('Y-m-d').'-au-'.$fin->format('Y-m-d').'.csv';
 
         return response($csv, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Pragma'              => 'no-cache',
-            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
-            'Expires'             => '0',
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ]);
     }
 }

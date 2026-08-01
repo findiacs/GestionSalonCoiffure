@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class NotificationController extends Controller
 {
@@ -37,7 +37,7 @@ class NotificationController extends Controller
         $notification->marquerLue();
 
         Log::info('Notifications: notification marquée lue', [
-            'user_id'         => Auth::id(),
+            'user_id' => Auth::id(),
             'notification_id' => $id,
         ]);
 

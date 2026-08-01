@@ -15,15 +15,16 @@ use Illuminate\Support\Facades\Schema;
 class GestionnaireDisponibilite
 {
     private int $pas = 30; // minutes entre créneaux
+
     private ?bool $hasExceptionsTable = null;
 
     /**
      * Retourne les créneaux disponibles pour un jour donné.
      */
     public function creneauxDuJour(
-        Salon    $salon,
-        Service  $service,
-        Carbon   $date,
+        Salon $salon,
+        Service $service,
+        Carbon $date,
         ?Employe $employe = null
     ): array {
         $plage = $this->plageSalonPourDate($salon, $date);
@@ -35,21 +36,29 @@ class GestionnaireDisponibilite
 
         if ($employe) {
             $plageEmp = $this->plageEmployePourDate($employe, $date, $plage);
-            if (! $plageEmp) return [];
+            if (! $plageEmp) {
+                return [];
+            }
             [$dE, $fE] = $plageEmp;
-            if ($dE->gt($debut)) $debut = $dE;
-            if ($fE->lt($fin))   $fin   = $fE;
-            if ($debut->gte($fin)) return [];
+            if ($dE->gt($debut)) {
+                $debut = $dE;
+            }
+            if ($fE->lt($fin)) {
+                $fin = $fE;
+            }
+            if ($debut->gte($fin)) {
+                return [];
+            }
         }
 
         $reservations = $this->reservationsDuJour($salon, $date, $employe);
 
         $creneaux = [];
-        $cursor   = $debut->copy();
+        $cursor = $debut->copy();
         $dureeSvc = $service->duree_minu ?? 30;
 
         while ($cursor->copy()->addMinutes($dureeSvc)->lte($fin)) {
-            $dateheure  = $cursor->copy();
+            $dateheure = $cursor->copy();
             $disponible = $this->creneauLibre($dateheure, $dureeSvc, $reservations, $employe);
 
             if ($disponible && ! $employe) {
@@ -61,8 +70,8 @@ class GestionnaireDisponibilite
             }
 
             $creneaux[] = [
-                'heure'      => $dateheure->format('H:i'),
-                'datetime'   => $dateheure->toDateTimeString(),
+                'heure' => $dateheure->format('H:i'),
+                'datetime' => $dateheure->toDateTimeString(),
                 'disponible' => $disponible,
             ];
 
@@ -73,10 +82,10 @@ class GestionnaireDisponibilite
     }
 
     public function creneauxDisponibles(
-        Salon    $salon,
-        Service  $service,
-        Carbon   $debut,
-        Carbon   $fin
+        Salon $salon,
+        Service $service,
+        Carbon $debut,
+        Carbon $fin
     ): Collection {
         $result = collect();
         $cursor = $debut->copy()->startOfDay();
@@ -84,31 +93,42 @@ class GestionnaireDisponibilite
             $result->put($cursor->toDateString(), $this->creneauxDuJour($salon, $service, $cursor->copy()));
             $cursor->addDay();
         }
+
         return $result;
     }
 
     public function estDisponible(
-        Salon    $salon,
-        Service  $service,
-        Carbon   $dateHeure,
+        Salon $salon,
+        Service $service,
+        Carbon $dateHeure,
         ?Employe $employe = null
     ): bool {
-        if ($dateHeure->isPast()) return false;
+        if ($dateHeure->isPast()) {
+            return false;
+        }
 
         $plage = $this->plageSalonPourDate($salon, $dateHeure);
-        if (! $plage) return false;
+        if (! $plage) {
+            return false;
+        }
         [$debut, $fin] = $plage;
 
-        $duree   = $service->duree_minu ?? 30;
+        $duree = $service->duree_minu ?? 30;
         $finCren = $dateHeure->copy()->addMinutes($duree);
 
-        if ($dateHeure->lt($debut) || $finCren->gt($fin)) return false;
+        if ($dateHeure->lt($debut) || $finCren->gt($fin)) {
+            return false;
+        }
 
         if ($employe) {
             $plageEmp = $this->plageEmployePourDate($employe, $dateHeure, $plage);
-            if (! $plageEmp) return false;
+            if (! $plageEmp) {
+                return false;
+            }
             [$dE, $fE] = $plageEmp;
-            if ($dateHeure->lt($dE) || $finCren->gt($fE)) return false;
+            if ($dateHeure->lt($dE) || $finCren->gt($fE)) {
+                return false;
+            }
         }
 
         $reservations = $this->reservationsDuJour($salon, $dateHeure, $employe);
@@ -126,7 +146,7 @@ class GestionnaireDisponibilite
 
     public function tauxOccupation(Salon $salon, Carbon $debut, Carbon $fin): float
     {
-        $total    = Reservation::where('salon_id', $salon->id)
+        $total = Reservation::where('salon_id', $salon->id)
             ->whereBetween('date_heure', [$debut, $fin])
             ->whereIn('statut', ['en_attente', 'confirmee', 'terminee'])
             ->count();
@@ -147,15 +167,18 @@ class GestionnaireDisponibilite
         $ex = $this->exceptionPourSalon($salon->id, $date);
 
         if ($ex) {
-            if ($ex->ferme) return null;
+            if ($ex->ferme) {
+                return null;
+            }
+
             return [
-                Carbon::parse($date->toDateString() . ' ' . $ex->debut),
-                Carbon::parse($date->toDateString() . ' ' . $ex->fin),
+                Carbon::parse($date->toDateString().' '.$ex->debut),
+                Carbon::parse($date->toDateString().' '.$ex->fin),
             ];
         }
 
-        $jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-        $jour  = $jours[$date->dayOfWeek];
+        $jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        $jour = $jours[$date->dayOfWeek];
 
         $horaires = $salon->horaires;
 
@@ -164,21 +187,26 @@ class GestionnaireDisponibilite
         // de réservation soit entièrement bloqué tant que le gérant n'a pas
         // renseigné ses horaires.
         if (empty($horaires) || ! isset($horaires[$jour])) {
-            if ($jour === 'dimanche') return null;
+            if ($jour === 'dimanche') {
+                return null;
+            }
+
             return [
-                Carbon::parse($date->toDateString() . ' 09:00'),
-                Carbon::parse($date->toDateString() . ' 19:00'),
+                Carbon::parse($date->toDateString().' 09:00'),
+                Carbon::parse($date->toDateString().' 19:00'),
             ];
         }
 
-        if (! $salon->estOuvert($jour)) return null;
+        if (! $salon->estOuvert($jour)) {
+            return null;
+        }
 
         $debut = $salon->heureOuverture($jour) ?? '09:00';
-        $fin   = $salon->heureFermeture($jour) ?? '18:00';
+        $fin = $salon->heureFermeture($jour) ?? '18:00';
 
         return [
-            Carbon::parse($date->toDateString() . ' ' . $debut),
-            Carbon::parse($date->toDateString() . ' ' . $fin),
+            Carbon::parse($date->toDateString().' '.$debut),
+            Carbon::parse($date->toDateString().' '.$fin),
         ];
     }
 
@@ -187,17 +215,20 @@ class GestionnaireDisponibilite
      * on tombe sur la plage du salon (rétrocompat : avant ce feature, les employés
      * héritaient implicitement des horaires salon).
      *
-     * @param array $plageSalon [Carbon $debut, Carbon $fin]
+     * @param  array  $plageSalon  [Carbon $debut, Carbon $fin]
      */
     private function plageEmployePourDate(Employe $employe, Carbon $date, array $plageSalon): ?array
     {
         $ex = $this->exceptionPourEmploye($employe->id, $date);
 
         if ($ex) {
-            if ($ex->ferme) return null;
+            if ($ex->ferme) {
+                return null;
+            }
+
             return [
-                Carbon::parse($date->toDateString() . ' ' . $ex->debut),
-                Carbon::parse($date->toDateString() . ' ' . $ex->fin),
+                Carbon::parse($date->toDateString().' '.$ex->debut),
+                Carbon::parse($date->toDateString().' '.$ex->fin),
             ];
         }
 
@@ -207,20 +238,22 @@ class GestionnaireDisponibilite
             return $plageSalon;
         }
 
-        $jours = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-        $jour  = $jours[$date->dayOfWeek];
+        $jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        $jour = $jours[$date->dayOfWeek];
 
         if (! isset($h[$jour]) || ($h[$jour]['ferme'] ?? false)) {
             return null;
         }
 
         $debut = $h[$jour]['debut'] ?? null;
-        $fin   = $h[$jour]['fin']   ?? null;
-        if (! $debut || ! $fin) return $plageSalon;
+        $fin = $h[$jour]['fin'] ?? null;
+        if (! $debut || ! $fin) {
+            return $plageSalon;
+        }
 
         return [
-            Carbon::parse($date->toDateString() . ' ' . $debut),
-            Carbon::parse($date->toDateString() . ' ' . $fin),
+            Carbon::parse($date->toDateString().' '.$debut),
+            Carbon::parse($date->toDateString().' '.$fin),
         ];
     }
 
@@ -242,14 +275,20 @@ class GestionnaireDisponibilite
         $employes = $salon->employesActifs;
 
         // Salon sans équipe → on considère le salon lui-même comme "ressource"
-        if ($employes->isEmpty()) return true;
+        if ($employes->isEmpty()) {
+            return true;
+        }
 
         foreach ($employes as $emp) {
             $plage = $this->plageEmployePourDate($emp, $dateHeure, $plageSalon);
-            if (! $plage) continue;
+            if (! $plage) {
+                continue;
+            }
             [$dE, $fE] = $plage;
             $finCren = $dateHeure->copy()->addMinutes($duree);
-            if ($dateHeure->lt($dE) || $finCren->gt($fE)) continue;
+            if ($dateHeure->lt($dE) || $finCren->gt($fE)) {
+                continue;
+            }
 
             $resas = $this->reservationsDuJour($salon, $dateHeure, $emp);
             if ($this->creneauLibre($dateHeure, $duree, $resas, $emp)) {
@@ -261,10 +300,10 @@ class GestionnaireDisponibilite
     }
 
     private function creneauLibre(
-        Carbon     $dateHeure,
-        int        $dureeMinutes,
+        Carbon $dateHeure,
+        int $dureeMinutes,
         Collection $reservations,
-        ?Employe   $employe = null
+        ?Employe $employe = null
     ): bool {
         $finCreneau = $dateHeure->copy()->addMinutes($dureeMinutes);
 
@@ -274,7 +313,7 @@ class GestionnaireDisponibilite
             }
 
             $debutRes = Carbon::parse($r->date_heure);
-            $finRes   = $debutRes->copy()->addMinutes($r->duree_minutes ?? 30);
+            $finRes = $debutRes->copy()->addMinutes($r->duree_minutes ?? 30);
 
             if ($dateHeure->lt($finRes) && $finCreneau->gt($debutRes)) {
                 return false;
@@ -300,12 +339,15 @@ class GestionnaireDisponibilite
                 $this->hasExceptionsTable = false;
             }
         }
+
         return $this->hasExceptionsTable;
     }
 
     private function exceptionPourSalon(int $salonId, Carbon $date): ?DisponibiliteException
     {
-        if (! $this->exceptionsTableExists()) return null;
+        if (! $this->exceptionsTableExists()) {
+            return null;
+        }
         try {
             return DisponibiliteException::where('salon_id', $salonId)
                 ->whereNull('employe_id')
@@ -313,19 +355,23 @@ class GestionnaireDisponibilite
                 ->first();
         } catch (\Throwable $e) {
             Log::warning('[Dispo] Lecture exception salon a échoué', ['err' => $e->getMessage()]);
+
             return null;
         }
     }
 
     private function exceptionPourEmploye(int $employeId, Carbon $date): ?DisponibiliteException
     {
-        if (! $this->exceptionsTableExists()) return null;
+        if (! $this->exceptionsTableExists()) {
+            return null;
+        }
         try {
             return DisponibiliteException::where('employe_id', $employeId)
                 ->whereDate('date', $date->toDateString())
                 ->first();
         } catch (\Throwable $e) {
             Log::warning('[Dispo] Lecture exception employé a échoué', ['err' => $e->getMessage()]);
+
             return null;
         }
     }

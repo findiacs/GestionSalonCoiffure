@@ -18,7 +18,7 @@ class VilleController extends Controller
 
         $villes = Ville::withCount([
             'salons as salons_count',
-            'salons as salons_valides_count' => fn($q) => $q->where('valide', 1),
+            'salons as salons_valides_count' => fn ($q) => $q->where('valide', 1),
         ])->orderBy('nom_ville')->paginate(20);
 
         return view('admin.villes', compact('villes'));
@@ -27,17 +27,17 @@ class VilleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'nom_ville'   => ['required', 'string', 'max:100', 'unique:villes,nom_ville'],
+            'nom_ville' => ['required', 'string', 'max:100', 'unique:villes,nom_ville'],
             'code_postal' => ['required', 'string', 'max:10'],
-            'region'      => ['required', 'string', 'max:100'],
+            'region' => ['required', 'string', 'max:100'],
         ]);
 
         $ville = Ville::create([
-            'nom_ville'   => $request->nom_ville,
+            'nom_ville' => $request->nom_ville,
             'code_postal' => $request->code_postal,
-            'region'      => $request->region,
-            'pays'        => 'Maroc',
-            'actif'       => $request->boolean('actif'),
+            'region' => $request->region,
+            'pays' => 'Maroc',
+            'actif' => $request->boolean('actif'),
         ]);
 
         Log::info('Admin: ville creee', ['admin_id' => Auth::id(), 'ville_id' => $ville->id, 'nom' => $ville->nom_ville]);
@@ -50,16 +50,16 @@ class VilleController extends Controller
         $ville = Ville::findOrFail($id);
 
         $request->validate([
-            'nom_ville'   => ['required', 'string', 'max:100', 'unique:villes,nom_ville,' . $id],
+            'nom_ville' => ['required', 'string', 'max:100', 'unique:villes,nom_ville,'.$id],
             'code_postal' => ['required', 'string', 'max:10'],
-            'region'      => ['required', 'string', 'max:100'],
+            'region' => ['required', 'string', 'max:100'],
         ]);
 
         $ville->update([
-            'nom_ville'   => $request->nom_ville,
+            'nom_ville' => $request->nom_ville,
             'code_postal' => $request->code_postal,
-            'region'      => $request->region,
-            'actif'       => $request->boolean('actif'),
+            'region' => $request->region,
+            'actif' => $request->boolean('actif'),
         ]);
 
         Log::info('Admin: ville mise a jour', ['admin_id' => Auth::id(), 'ville_id' => $id]);
@@ -73,6 +73,7 @@ class VilleController extends Controller
 
         if ($ville->salons()->count() > 0) {
             Log::warning('Admin: tentative suppression ville avec salons', ['admin_id' => Auth::id(), 'ville_id' => $id]);
+
             return back()->with('error', 'Impossible de supprimer : des salons sont rattachés à cette ville.');
         }
 

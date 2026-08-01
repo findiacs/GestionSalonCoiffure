@@ -19,20 +19,20 @@ return new class extends Migration
             $table->string('telephone', 20)->nullable();
             $table->string('email', 180)->nullable();
             $table->json('horaires')->nullable()
-                  ->comment('{"lundi":{"debut":"09:00","fin":"18:00","ferme":false},...}');
+                ->comment('{"lundi":{"debut":"09:00","fin":"18:00","ferme":false},...}');
             $table->string('photo', 255)->nullable()
-                  ->comment('Chemin storage/app/public/salons/');
+                ->comment('Chemin storage/app/public/salons/');
             $table->text('description')->nullable();
             $table->string('rib', 60)->nullable();
             $table->decimal('note_moy', 3, 2)->default(0.00);
             $table->unsignedInteger('nb_avis')->default(0);
             $table->tinyInteger('valide')->default(0)
-                  ->comment('0=en_attente, 1=valide, -1=suspendu');
+                ->comment('0=en_attente, 1=valide, -1=suspendu');
             $table->unsignedTinyInteger('nb_employes')->default(0);
             $table->decimal('latitude', 10, 7)->nullable();
             $table->decimal('longitude', 10, 7)->nullable();
             $table->dateTime('date_valid')->nullable()
-                  ->comment('Date de validation admin');
+                ->comment('Date de validation admin');
             $table->timestamps();
 
             $table->index('valide');

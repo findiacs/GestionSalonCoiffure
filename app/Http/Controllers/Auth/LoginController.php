@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class LoginController extends Controller
 {
@@ -22,11 +22,11 @@ class LoginController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'email'         => ['required', 'email'],
-            'mot_de_passe'  => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'mot_de_passe' => ['required', 'string'],
         ], [
-            'email.required'        => 'L\'adresse email est obligatoire.',
-            'email.email'           => 'L\'adresse email n\'est pas valide.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
             'mot_de_passe.required' => 'Le mot de passe est obligatoire.',
         ]);
 
@@ -35,7 +35,7 @@ class LoginController extends Controller
         Log::info('Auth: tentative de connexion', ['email' => $request->email, 'ip' => $request->ip()]);
 
         $attempt = Auth::attempt([
-            'email'    => $request->email,
+            'email' => $request->email,
             'password' => $request->mot_de_passe,
         ], $request->boolean('remember'));
 
@@ -61,10 +61,10 @@ class LoginController extends Controller
                 ->with('info', 'Veuillez vérifier votre adresse email avant de continuer.');
         }
 
-        return match($user->role) {
-            'admin'  => redirect()->intended(route('admin.dashboard')),
-            'salon'  => redirect()->intended(route('salon.dashboard')),
-            default  => redirect()->intended(route('client.dashboard')),
+        return match ($user->role) {
+            'admin' => redirect()->intended(route('admin.dashboard')),
+            'salon' => redirect()->intended(route('salon.dashboard')),
+            default => redirect()->intended(route('client.dashboard')),
         };
     }
 
@@ -99,7 +99,7 @@ class LoginController extends Controller
     protected function throttleKey(Request $request): string
     {
         return Str::transliterate(
-            Str::lower($request->input('email')) . '|' . $request->ip()
+            Str::lower($request->input('email')).'|'.$request->ip()
         );
     }
 }

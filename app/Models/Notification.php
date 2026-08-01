@@ -11,11 +11,14 @@ class Notification extends Model
 {
     use HasFactory;
 
-    protected $table   = 'notifications';
+    protected $table = 'notifications';
+
     public $timestamps = false;
+
     // Clé primaire UUID (CHAR 36)
-    protected $keyType    = 'string';
-    public    $incrementing = false;
+    protected $keyType = 'string';
+
+    public $incrementing = false;
 
     protected $fillable = [
         'id',
@@ -27,7 +30,7 @@ class Notification extends Model
 
     protected $casts = [
         'donnees' => 'array',   // JSON → array automatiquement
-        'lu_le'   => 'datetime',
+        'lu_le' => 'datetime',
         'cree_le' => 'datetime',
     ];
 
@@ -43,8 +46,15 @@ class Notification extends Model
     }
 
     // ── Helpers ────────────────────────────────────────────────────
-    public function estLue(): bool    { return ! is_null($this->lu_le); }
-    public function estNonLue(): bool { return is_null($this->lu_le); }
+    public function estLue(): bool
+    {
+        return ! is_null($this->lu_le);
+    }
+
+    public function estNonLue(): bool
+    {
+        return is_null($this->lu_le);
+    }
 
     public function marquerLue(): void
     {
@@ -63,13 +73,19 @@ class Notification extends Model
     ];
 
     // ── Scopes ─────────────────────────────────────────────────────
-    public function scopeNonLues($q) { return $q->whereNull('lu_le'); }
-    public function scopeParType($q, string $type) {
+    public function scopeNonLues($q)
+    {
+        return $q->whereNull('lu_le');
+    }
+
+    public function scopeParType($q, string $type)
+    {
         return $q->where('type', $type);
     }
 
     // ── Relations ──────────────────────────────────────────────────
-    public function user(): BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 }

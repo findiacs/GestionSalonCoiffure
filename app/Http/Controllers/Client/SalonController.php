@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Ville;
-use App\Models\Salon;
 use App\Models\Avis;
 use App\Models\Reservation;
+use App\Models\Salon;
+use App\Models\Ville;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class SalonController extends Controller
 {
@@ -35,7 +35,7 @@ class SalonController extends Controller
 
         $query = Salon::valides()
             ->addSelect(['*',
-                'real_nb_avis'  => $realNbAvis,
+                'real_nb_avis' => $realNbAvis,
                 'real_note_moy' => $realNoteMoy,
             ])
             ->with(['ville', 'servicesActifs'])
@@ -45,7 +45,7 @@ class SalonController extends Controller
         // 1. Quartier passé en URL (priorité absolue)
         // 2. Quartier GPS passé en URL (?gps=1&quartier=...)
         // 3. Quartier du profil client connecté (même ville)
-        $autoQuartier  = false;   // true = filtre appliqué automatiquement
+        $autoQuartier = false;   // true = filtre appliqué automatiquement
         $quartierActif = null;    // valeur du quartier filtré
 
         if ($request->filled('quartier')) {
@@ -66,8 +66,7 @@ class SalonController extends Controller
 
         // Filtre catégorie de service
         if ($request->filled('categorie')) {
-            $query->whereHas('services', fn($q) =>
-                $q->where('categorie', $request->categorie)->where('actif', 1)
+            $query->whereHas('services', fn ($q) => $q->where('categorie', $request->categorie)->where('actif', 1)
             );
         }
 
@@ -78,9 +77,9 @@ class SalonController extends Controller
 
         // Tri
         $tri = $request->get('tri', 'note');
-        $query = match($tri) {
+        $query = match ($tri) {
             'alpha' => $query->orderBy('nom_salon'),
-            'avis'  => $query->orderByDesc('nb_avis'),
+            'avis' => $query->orderByDesc('nb_avis'),
             default => $query->mieuxNotes(),
         };
 
@@ -114,40 +113,38 @@ class SalonController extends Controller
             ->parVille($villeModel->id)
             ->with(['ville', 'servicesActifs', 'employesActifs'])
             ->get()
-            ->first(fn($s) => Str::slug($s->nom_salon) === $slug);
+            ->first(fn ($s) => Str::slug($s->nom_salon) === $slug);
 
-        if (! $salon) abort(404);
+        if (! $salon) {
+            abort(404);
+        }
 
-        $avis = Avis::whereHas('reservation', fn($q) =>
-                $q->where('salon_id', $salon->id)
-              )
-              ->with('reservation.client')
-              ->latest()
-              ->limit(10)
-              ->get();
+        $avis = Avis::whereHas('reservation', fn ($q) => $q->where('salon_id', $salon->id)
+        )
+            ->with('reservation.client')
+            ->latest()
+            ->limit(10)
+            ->get();
 
         // Calcul dynamique depuis la vraie table avis
-        $totalAvis = Avis::whereHas('reservation', fn($q) =>
-            $q->where('salon_id', $salon->id)
+        $totalAvis = Avis::whereHas('reservation', fn ($q) => $q->where('salon_id', $salon->id)
         )->count();
 
         $noteMoy = $totalAvis > 0
-            ? round(Avis::whereHas('reservation', fn($q) =>
-                $q->where('salon_id', $salon->id)
-              )->avg('note'), 1)
+            ? round(Avis::whereHas('reservation', fn ($q) => $q->where('salon_id', $salon->id)
+            )->avg('note'), 1)
             : 0;
 
         $noteMoyInt = (int) round($noteMoy);
 
         $distribution = [];
         for ($i = 5; $i >= 1; $i--) {
-            $nb = Avis::whereHas('reservation', fn($q) =>
-                $q->where('salon_id', $salon->id)
+            $nb = Avis::whereHas('reservation', fn ($q) => $q->where('salon_id', $salon->id)
             )->where('note', $i)->count();
 
             $distribution[$i] = [
                 'count' => $nb,
-                'pct'   => $totalAvis > 0 ? round($nb / $totalAvis * 100) : 0,
+                'pct' => $totalAvis > 0 ? round($nb / $totalAvis * 100) : 0,
             ];
         }
 
@@ -160,9 +157,9 @@ class SalonController extends Controller
         if (Auth::check() && Auth::user()->isClient()) {
             $reservationAEvaluer = Reservation::where('client_id', Auth::id())
                 ->where('salon_id', $salon->id)
-                ->where(fn($q) => $q
+                ->where(fn ($q) => $q
                     ->where('statut', 'terminee')
-                    ->orWhere(fn($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
+                    ->orWhere(fn ($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
                 )
                 ->doesntHave('avis')
                 ->latest('date_heure')

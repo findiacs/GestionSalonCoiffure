@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Salon;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
 use App\Models\Avis;
+use App\Models\Reservation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -53,7 +53,7 @@ class DashboardController extends Controller
 
         $chartData = [];
         for ($i = 6; $i >= 0; $i--) {
-            $date        = now()->subDays($i);
+            $date = now()->subDays($i);
             $chartData[] = [
                 'label' => $date->translatedFormat('D'),
                 'value' => Reservation::where('salon_id', $salon->id)
@@ -77,18 +77,18 @@ class DashboardController extends Controller
             ->get();
 
         $derniersAvis = Avis::whereHas('reservation',
-                fn($q) => $q->where('salon_id', $salon->id)
-            )
+            fn ($q) => $q->where('salon_id', $salon->id)
+        )
             ->with('reservation.client')
             ->latest()
             ->limit(3)
             ->get();
 
         Log::debug('Salon: dashboard chiffres', [
-            'salon_id'       => $salon->id,
-            'rdv_auj'        => $rdvAujourdhui->count(),
-            'en_attente'     => $enAttente->count(),
-            'rdv_semaine'    => $rdvSemaine,
+            'salon_id' => $salon->id,
+            'rdv_auj' => $rdvAujourdhui->count(),
+            'en_attente' => $enAttente->count(),
+            'rdv_semaine' => $rdvSemaine,
         ]);
 
         return view('salon.dashboard', compact(

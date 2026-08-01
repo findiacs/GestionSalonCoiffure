@@ -10,7 +10,8 @@ class DisponibiliteException extends Model
 {
     use HasFactory;
 
-    protected $table   = 'disponibilite_exceptions';
+    protected $table = 'disponibilite_exceptions';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -18,8 +19,8 @@ class DisponibiliteException extends Model
     ];
 
     protected $casts = [
-        'date'       => 'date',
-        'ferme'      => 'boolean',
+        'date' => 'date',
+        'ferme' => 'boolean',
         'created_at' => 'datetime',
     ];
 

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reservation;
 use App\Models\Avis;
+use App\Models\Reservation;
 use App\Models\Salon;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         Log::info('[Client] Dashboard', [
-            'user_id'  => $user->id,
+            'user_id' => $user->id,
             'verified' => $user->hasVerifiedEmail(),
         ]);
 
@@ -48,23 +48,23 @@ class DashboardController extends Controller
 
         // Statistiques personnelles
         $stats = [
-            'total'     => Reservation::where('client_id', $user->id)->count(),
-            'terminee'  => Reservation::where('client_id', $user->id)
-                               ->where('statut', 'terminee')->count(),
-            'a_venir'   => Reservation::where('client_id', $user->id)
-                               ->whereIn('statut', ['en_attente', 'confirmee'])
-                               ->where('date_heure', '>=', now())->count(),
-            'avis'      => Avis::whereHas('reservation',
-                               fn($q) => $q->where('client_id', $user->id)
-                           )->count(),
+            'total' => Reservation::where('client_id', $user->id)->count(),
+            'terminee' => Reservation::where('client_id', $user->id)
+                ->where('statut', 'terminee')->count(),
+            'a_venir' => Reservation::where('client_id', $user->id)
+                ->whereIn('statut', ['en_attente', 'confirmee'])
+                ->where('date_heure', '>=', now())->count(),
+            'avis' => Avis::whereHas('reservation',
+                fn ($q) => $q->where('client_id', $user->id)
+            )->count(),
         ];
 
         // Avis en attente — terminées OU confirmées avec date passée (cron non exécuté)
         $rdvSansAvis = Reservation::with(['salon', 'service'])
             ->where('client_id', $user->id)
-            ->where(fn($q) => $q
+            ->where(fn ($q) => $q
                 ->where('statut', 'terminee')
-                ->orWhere(fn($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
+                ->orWhere(fn ($q2) => $q2->where('statut', 'confirmee')->where('date_heure', '<', now()))
             )
             ->doesntHave('avis')
             ->orderByDesc('date_heure')
@@ -94,7 +94,7 @@ class DashboardController extends Controller
             if ($salonsProches->count() < 4) {
                 $exclus = $salonsProches->pluck('id')->toArray();
                 $complement = $query
-                    ->when(count($exclus), fn($q) => $q->whereNotIn('id', $exclus))
+                    ->when(count($exclus), fn ($q) => $q->whereNotIn('id', $exclus))
                     ->mieuxNotes()
                     ->limit(4 - $salonsProches->count())
                     ->get();

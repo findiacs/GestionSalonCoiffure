@@ -36,12 +36,12 @@ class Reservation extends Model
     ];
 
     protected $casts = [
-        'date_heure'    => 'datetime',
-        'date_annul'    => 'datetime',
-        'cree_le'       => 'datetime',
+        'date_heure' => 'datetime',
+        'date_annul' => 'datetime',
+        'cree_le' => 'datetime',
         'duree_minutes' => 'integer',
-        'rappel_24h'    => 'boolean',
-        'rappel_2h'     => 'boolean',
+        'rappel_24h' => 'boolean',
+        'rappel_2h' => 'boolean',
     ];
 
     /*
@@ -57,9 +57,20 @@ class Reservation extends Model
             && $this->date_heure->greaterThanOrEqualTo(now()->addHours(24));
     }
 
-    public function estConfirmee(): bool  { return $this->statut === 'confirmee'; }
-    public function estAnnulee(): bool    { return $this->statut === 'annulee'; }
-    public function estEnAttente(): bool  { return $this->statut === 'en_attente'; }
+    public function estConfirmee(): bool
+    {
+        return $this->statut === 'confirmee';
+    }
+
+    public function estAnnulee(): bool
+    {
+        return $this->statut === 'annulee';
+    }
+
+    public function estEnAttente(): bool
+    {
+        return $this->statut === 'en_attente';
+    }
 
     /**
      * Évaluable = terminée OU confirmée avec date passée (cron pas encore passé)
@@ -67,8 +78,8 @@ class Reservation extends Model
      */
     public function peutEtreEvaluee(): bool
     {
-        return ($this->statut === 'terminee'
-            || ($this->statut === 'confirmee' && $this->date_heure->isPast()));
+        return $this->statut === 'terminee'
+            || ($this->statut === 'confirmee' && $this->date_heure->isPast());
     }
 
     /*
@@ -80,7 +91,7 @@ class Reservation extends Model
     public function scopeAVenir($query)
     {
         return $query->whereIn('statut', ['en_attente', 'confirmee'])
-                     ->where('date_heure', '>=', now());
+            ->where('date_heure', '>=', now());
     }
 
     public function scopePassees($query)
@@ -91,21 +102,21 @@ class Reservation extends Model
     public function scopeRappel24h($query)
     {
         return $query->where('statut', 'confirmee')
-                     ->where('rappel_24h', false)
-                     ->whereBetween('date_heure', [
-                         now()->addHours(22),
-                         now()->addHours(26),
-                     ]);
+            ->where('rappel_24h', false)
+            ->whereBetween('date_heure', [
+                now()->addHours(22),
+                now()->addHours(26),
+            ]);
     }
 
     public function scopeRappel2h($query)
     {
         return $query->where('statut', 'confirmee')
-                     ->where('rappel_2h', false)
-                     ->whereBetween('date_heure', [
-                         now()->addHour(),
-                         now()->addHours(3),
-                     ]);
+            ->where('rappel_2h', false)
+            ->whereBetween('date_heure', [
+                now()->addHour(),
+                now()->addHours(3),
+            ]);
     }
 
     /*

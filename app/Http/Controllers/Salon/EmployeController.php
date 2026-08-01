@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Salon;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employe;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class EmployeController extends Controller
 {
@@ -25,7 +25,7 @@ class EmployeController extends Controller
     */
     public function index(): View
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $employes = Employe::where('salon_id', $salon->id)
             ->orderBy('prenom')
             ->get();
@@ -43,25 +43,25 @@ class EmployeController extends Controller
         $salon = $this->salon();
 
         $data = $request->validate([
-            'prenom'      => ['required', 'string', 'max:80'],
-            'nom'         => ['required', 'string', 'max:80'],
-            'email'       => ['nullable', 'email', 'max:180'],
-            'tel'         => ['nullable', 'string', 'max:20'],
+            'prenom' => ['required', 'string', 'max:80'],
+            'nom' => ['required', 'string', 'max:80'],
+            'email' => ['nullable', 'email', 'max:180'],
+            'tel' => ['nullable', 'string', 'max:20'],
             'specialites' => ['nullable', 'array'],
-            'specialites.*'=> ['string', 'max:60'],
-            'horaires'    => ['nullable', 'array'],
-            'photo'       => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+            'specialites.*' => ['string', 'max:60'],
+            'horaires' => ['nullable', 'array'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
         ], [
             'prenom.required' => 'Le prénom est obligatoire.',
-            'nom.required'    => 'Le nom est obligatoire.',
-            'photo.image'     => 'Le fichier doit être une image (JPEG, PNG, WebP).',
-            'photo.max'       => 'La photo ne doit pas dépasser 2 Mo.',
+            'nom.required' => 'Le nom est obligatoire.',
+            'photo.image' => 'Le fichier doit être une image (JPEG, PNG, WebP).',
+            'photo.max' => 'La photo ne doit pas dépasser 2 Mo.',
         ]);
 
-        $data['salon_id']    = $salon->id;
-        $data['actif']       = $request->boolean('actif');
+        $data['salon_id'] = $salon->id;
+        $data['actif'] = $request->boolean('actif');
         $data['specialites'] = $request->specialites ?? [];
-        $data['horaires']    = $this->buildHoraires($request);
+        $data['horaires'] = $this->buildHoraires($request);
 
         // Upload photo. Pas de fichier → ne pas créer la colonne avec une
         // valeur vide, on laisse photo NULL et le placeholder s'affiche.
@@ -78,7 +78,7 @@ class EmployeController extends Controller
         $salon->update(['nb_employes' => $salon->employesActifs()->count()]);
 
         return redirect()->route('salon.employes.index')
-            ->with('success', $data['prenom'] . ' ' . $data['nom'] . ' ajouté(e) à l\'équipe.');
+            ->with('success', $data['prenom'].' '.$data['nom'].' ajouté(e) à l\'équipe.');
     }
 
     /*
@@ -88,18 +88,18 @@ class EmployeController extends Controller
     */
     public function update(Request $request, int $id): RedirectResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $employe = Employe::where('salon_id', $salon->id)->findOrFail($id);
 
         $data = $request->validate([
-            'prenom'       => ['required', 'string', 'max:80'],
-            'nom'          => ['required', 'string', 'max:80'],
-            'email'        => ['nullable', 'email', 'max:180'],
-            'tel'          => ['nullable', 'string', 'max:20'],
-            'specialites'  => ['nullable', 'array'],
-            'specialites.*'=> ['string', 'max:60'],
-            'horaires'     => ['nullable', 'array'],
-            'photo'        => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
+            'prenom' => ['required', 'string', 'max:80'],
+            'nom' => ['required', 'string', 'max:80'],
+            'email' => ['nullable', 'email', 'max:180'],
+            'tel' => ['nullable', 'string', 'max:20'],
+            'specialites' => ['nullable', 'array'],
+            'specialites.*' => ['string', 'max:60'],
+            'horaires' => ['nullable', 'array'],
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,webp', 'max:2048'],
         ]);
 
         $data['actif'] = $request->boolean('actif');
@@ -140,7 +140,7 @@ class EmployeController extends Controller
         $salon->update(['nb_employes' => $salon->employesActifs()->count()]);
 
         return redirect()->route('salon.employes.index')
-            ->with('success', 'Profil de ' . $employe->nomComplet() . ' mis à jour.');
+            ->with('success', 'Profil de '.$employe->nomComplet().' mis à jour.');
     }
 
     /*
@@ -150,7 +150,7 @@ class EmployeController extends Controller
     */
     public function destroy(int $id): RedirectResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $employe = Employe::where('salon_id', $salon->id)->findOrFail($id);
 
         $rdvFuturs = $employe->reservationsAVenir()->count();
@@ -179,16 +179,16 @@ class EmployeController extends Controller
     */
     public function toggleActif(int $id): JsonResponse
     {
-        $salon   = $this->salon();
+        $salon = $this->salon();
         $employe = Employe::where('salon_id', $salon->id)->findOrFail($id);
         $employe->update(['actif' => ! $employe->actif]);
         $salon->update(['nb_employes' => $salon->employesActifs()->count()]);
 
         return response()->json([
-            'actif'   => $employe->actif,
+            'actif' => $employe->actif,
             'message' => $employe->actif
-                ? $employe->nomComplet() . ' activé(e).'
-                : $employe->nomComplet() . ' désactivé(e).',
+                ? $employe->nomComplet().' activé(e).'
+                : $employe->nomComplet().' désactivé(e).',
         ]);
     }
 
@@ -199,15 +199,15 @@ class EmployeController extends Controller
     */
     private function buildHoraires(Request $request): array
     {
-        $jours    = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+        $jours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
         $horaires = [];
 
         foreach ($jours as $jour) {
             $ferme = $request->boolean("horaires_{$jour}_ferme", false);
             $horaires[$jour] = [
-                'debut'  => $ferme ? null : $request->input("horaires_{$jour}_debut"),
-                'fin'    => $ferme ? null : $request->input("horaires_{$jour}_fin"),
-                'ferme'  => $ferme,
+                'debut' => $ferme ? null : $request->input("horaires_{$jour}_debut"),
+                'fin' => $ferme ? null : $request->input("horaires_{$jour}_fin"),
+                'ferme' => $ferme,
             ];
         }
 

@@ -1,34 +1,35 @@
 <?php
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\GoogleController;
-use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Client\HomeController;
-use App\Http\Controllers\Client\SalonController;
-use App\Http\Controllers\Client\VilleController;
-use App\Http\Controllers\Client\ContactController;
-use App\Http\Controllers\Client\DashboardController;
-use App\Http\Controllers\Client\ReservationController;
-use App\Http\Controllers\Client\AvisController;
-use App\Http\Controllers\Client\ProfileController;
-use App\Http\Controllers\Client\NotificationController;
-use App\Http\Controllers\Salon\DashboardController as SalonDashboardController;
-use App\Http\Controllers\Salon\ReservationController as SalonReservationController;
-use App\Http\Controllers\Salon\ServiceController;
-use App\Http\Controllers\Salon\EmployeController;
-use App\Http\Controllers\Salon\DisponibiliteController;
-use App\Http\Controllers\Salon\AvisController as SalonAvisController;
-use App\Http\Controllers\Salon\ProfilSalonController;
+
+use App\Http\Controllers\Admin\AvisController as AdminAvisController;
+use App\Http\Controllers\Admin\ContactController as AdminContactController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\SalonController as AdminSalonController;
+use App\Http\Controllers\Admin\StatistiqueController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VilleController as AdminVilleController;
-use App\Http\Controllers\Admin\AvisController as AdminAvisController;
-use App\Http\Controllers\Admin\StatistiqueController;
-use App\Http\Controllers\Admin\ContactController as AdminContactController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Client\AvisController;
+use App\Http\Controllers\Client\ContactController;
+use App\Http\Controllers\Client\DashboardController;
+use App\Http\Controllers\Client\HomeController;
+use App\Http\Controllers\Client\NotificationController;
+use App\Http\Controllers\Client\ProfileController;
+use App\Http\Controllers\Client\ReservationController;
+use App\Http\Controllers\Client\SalonController;
+use App\Http\Controllers\Client\VilleController;
+use App\Http\Controllers\Salon\AvisController as SalonAvisController;
+use App\Http\Controllers\Salon\DashboardController as SalonDashboardController;
+use App\Http\Controllers\Salon\DisponibiliteController;
+use App\Http\Controllers\Salon\EmployeController;
+use App\Http\Controllers\Salon\ProfilSalonController;
+use App\Http\Controllers\Salon\ReservationController as SalonReservationController;
+use App\Http\Controllers\Salon\ServiceController;
+use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -54,7 +55,7 @@ Route::post('/deconnexion', [LoginController::class, 'logout'])->name('logout')-
 
 // Google OAuth
 Route::middleware('guest')->group(function () {
-    Route::get('/auth/google',          [GoogleController::class, 'redirect'])->name('auth.google');
+    Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 });
 

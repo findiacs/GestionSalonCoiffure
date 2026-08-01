@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('disponibilite_exceptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('salon_id')
-                  ->constrained('salons')->cascadeOnDelete();
+                ->constrained('salons')->cascadeOnDelete();
             $table->foreignId('employe_id')
-                  ->nullable()->constrained('employes')->cascadeOnDelete();
+                ->nullable()->constrained('employes')->cascadeOnDelete();
             $table->date('date');
             $table->boolean('ferme')->default(true);
             $table->time('debut')->nullable();

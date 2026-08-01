@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Reservation;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,8 @@ use Illuminate\Support\Facades\Log;
  */
 class EnvoyerRappels extends Command
 {
-    protected $signature   = 'rappels:envoyer {--dry-run : Afficher sans envoyer}';
+    protected $signature = 'rappels:envoyer {--dry-run : Afficher sans envoyer}';
+
     protected $description = 'Envoyer les rappels SMS 24h et 2h avant les réservations confirmées';
 
     public function __construct(private NotificationService $notifService)
@@ -37,7 +39,7 @@ class EnvoyerRappels extends Command
             $this->warn('⚠ Mode dry-run — aucun SMS ne sera envoyé.');
         }
 
-        $this->info('Salonify — Rappels SMS · ' . now()->format('Y-m-d H:i:s'));
+        $this->info('Salonify — Rappels SMS · '.now()->format('Y-m-d H:i:s'));
         $this->line(str_repeat('─', 50));
 
         // ── Rappels 24h ───────────────────────────────────────
@@ -45,7 +47,7 @@ class EnvoyerRappels extends Command
         $this->line('📨 Rappels 24h...');
 
         $nb24h = $dryRun
-            ? \App\Models\Reservation::rappel24h()->count()
+            ? Reservation::rappel24h()->count()
             : $this->notifService->envoyerRappels24h();
 
         $this->info("   ✓ {$nb24h} rappel(s) 24h traité(s).");
@@ -55,7 +57,7 @@ class EnvoyerRappels extends Command
         $this->line('📨 Rappels 2h...');
 
         $nb2h = $dryRun
-            ? \App\Models\Reservation::rappel2h()->count()
+            ? Reservation::rappel2h()->count()
             : $this->notifService->envoyerRappels2h();
 
         $this->info("   ✓ {$nb2h} rappel(s) 2h traité(s).");
@@ -65,13 +67,13 @@ class EnvoyerRappels extends Command
         $this->line('⏳ Traitement des réservations passées...');
 
         $nbExpirees = $dryRun
-            ? \App\Models\Reservation::where('statut', 'en_attente')->where('date_heure', '<', now())->count()
+            ? Reservation::where('statut', 'en_attente')->where('date_heure', '<', now())->count()
             : $this->notifService->annulerReservationsExpirees();
 
         $this->info("   ✓ {$nbExpirees} réservation(s) expirée(s) annulée(s).\n");
 
         $nbTerminees = $dryRun
-            ? \App\Models\Reservation::where('statut', 'confirmee')->where('date_heure', '<', now())->count()
+            ? Reservation::where('statut', 'confirmee')->where('date_heure', '<', now())->count()
             : $this->notifService->terminerReservationsPassees();
 
         $this->info("   ✓ {$nbTerminees} réservation(s) terminée(s).");
@@ -79,14 +81,14 @@ class EnvoyerRappels extends Command
         $this->line('');
         $this->line(str_repeat('─', 50));
         $total = $nb24h + $nb2h + $nbExpirees + $nbTerminees;
-        $this->info('Terminé. Total : ' . $total . ' actions traitées.');
+        $this->info('Terminé. Total : '.$total.' actions traitées.');
 
         Log::info('Rappels: termine', [
-            'rappels_24h'         => $nb24h,
-            'rappels_2h'          => $nb2h,
+            'rappels_24h' => $nb24h,
+            'rappels_2h' => $nb2h,
             'reservations_annulees' => $nbExpirees,
             'reservations_terminees' => $nbTerminees,
-            'total'               => $total,
+            'total' => $total,
         ]);
 
         return Command::SUCCESS;

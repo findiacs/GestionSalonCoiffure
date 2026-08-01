@@ -26,18 +26,18 @@ class AvisController extends Controller
             $query->whereNull('reponse_salon');
         }
         if ($request->filled('salon_id')) {
-            $query->whereHas('reservation', fn($q) => $q->where('salon_id', $request->salon_id));
+            $query->whereHas('reservation', fn ($q) => $q->where('salon_id', $request->salon_id));
         }
 
         $avis = $query->latest()->paginate(20)->withQueryString();
 
-        $totalAvis     = Avis::count();
-        $noteMoyRaw    = Avis::avg('note');
-        $sansReponse   = Avis::whereNull('reponse_salon')->count();
+        $totalAvis = Avis::count();
+        $noteMoyRaw = Avis::avg('note');
+        $sansReponse = Avis::whereNull('reponse_salon')->count();
 
         $stats = [
-            'total'        => $totalAvis,
-            'note_moy'     => $noteMoyRaw ? number_format($noteMoyRaw, 1) : '—',
+            'total' => $totalAvis,
+            'note_moy' => $noteMoyRaw ? number_format($noteMoyRaw, 1) : '—',
             'sans_reponse' => $sansReponse,
         ];
 
@@ -48,7 +48,7 @@ class AvisController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        $avis  = Avis::with('reservation.salon')->findOrFail($id);
+        $avis = Avis::with('reservation.salon')->findOrFail($id);
         $salon = $avis->reservation?->salon;
 
         $avis->delete();
@@ -60,7 +60,7 @@ class AvisController extends Controller
 
         Log::info('Admin: avis supprime', [
             'admin_id' => Auth::id(),
-            'avis_id'  => $id,
+            'avis_id' => $id,
             'salon_id' => $salon?->id,
         ]);
 

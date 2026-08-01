@@ -5,11 +5,11 @@ namespace App\Models;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -36,8 +36,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected $casts = [
         'email_verifie_le' => 'datetime',
-        'created_at'       => 'datetime',
-        'updated_at'       => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     // Laravel attend 'password' par convention — on mappe
@@ -80,7 +80,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function nomComplet(): string
     {
-        return trim($this->prenom . ' ' . $this->nom);
+        return trim($this->prenom.' '.$this->nom);
     }
 
     public function sendEmailVerificationNotification(): void
@@ -116,7 +116,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /** Ville du client */
     public function ville(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Ville::class, 'ville_id');
+        return $this->belongsTo(Ville::class, 'ville_id');
     }
 
     /** Salons gérés par ce user (role=salon) */
@@ -147,7 +147,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function notificationsNonLues(): HasMany
     {
         return $this->hasMany(Notification::class, 'user_id')
-                    ->whereNull('lu_le')
-                    ->latest('cree_le');
+            ->whereNull('lu_le')
+            ->latest('cree_le');
     }
 }

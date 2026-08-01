@@ -7,13 +7,13 @@ return [
     'mailers' => [
 
         'smtp' => [
-            'transport'    => 'smtp',
-            'host'         => env('MAIL_HOST', 'smtp-relay.brevo.com'),
-            'port'         => env('MAIL_PORT', 587),
-            'encryption'   => env('MAIL_ENCRYPTION', 'tls'),
-            'username'     => env('MAIL_USERNAME'),
-            'password'     => env('MAIL_PASSWORD'),
-            'timeout'      => null,
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', 'smtp-relay.brevo.com'),
+            'port' => env('MAIL_PORT', 587),
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
@@ -27,7 +27,7 @@ return [
 
         'log' => [
             'transport' => 'log',
-            'channel'   => env('MAIL_LOG_CHANNEL'),
+            'channel' => env('MAIL_LOG_CHANNEL'),
         ],
 
         'array' => [
@@ -36,14 +36,14 @@ return [
 
         'brevo' => [
             'transport' => 'brevo',
-            'api_key'   => env('BREVO_API_KEY'),
+            'api_key' => env('BREVO_API_KEY'),
         ],
 
     ],
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'noreply@salonify.ma'),
-        'name'    => env('MAIL_FROM_NAME', 'Salonify'),
+        'name' => env('MAIL_FROM_NAME', 'Salonify'),
     ],
 
 ];

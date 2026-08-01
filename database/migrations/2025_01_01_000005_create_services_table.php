@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('prix', 10, 2)->default(0.00);
             $table->unsignedSmallInteger('duree_minu')->default(30)
-                  ->comment('Durée en minutes');
+                ->comment('Durée en minutes');
             $table->string('categorie', 60)->default('Coiffure');
             $table->boolean('actif')->default(true);
             $table->timestamp('cree_le')->useCurrent();

@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('tel', 20)->nullable();
             $table->string('email', 180)->nullable();
             $table->json('specialites')->nullable()
-                  ->comment('["Coupe femme","Coloration","Lissage"]');
+                ->comment('["Coupe femme","Coloration","Lissage"]');
             $table->string('photo', 255)->nullable()
-                  ->comment('Chemin storage/app/public/employes/');
+                ->comment('Chemin storage/app/public/employes/');
             $table->json('horaires')->nullable()
-                  ->comment('{"lundi":{"debut":"09:00","fin":"18:00","ferme":false},...}');
+                ->comment('{"lundi":{"debut":"09:00","fin":"18:00","ferme":false},...}');
             $table->boolean('actif')->default(true);
             $table->timestamp('cree_le')->useCurrent();
 

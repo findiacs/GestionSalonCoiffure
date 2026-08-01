@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -35,8 +35,9 @@ class VerifyEmailController extends Controller
         if (! $signatureOk) {
             Log::warning('Auth: signature verification invalide', [
                 'user_id' => $id,
-                'url'     => $request->fullUrl(),
+                'url' => $request->fullUrl(),
             ]);
+
             return redirect()->route('login')
                 ->with('error', 'Lien de vérification invalide ou expiré. Connectez-vous et demandez un nouvel email.');
         }
@@ -60,6 +61,7 @@ class VerifyEmailController extends Controller
                 Auth::login($user, true);
             }
             $request->session()->regenerate();
+
             return $this->redirectUserApreVerification($user)
                 ->with('info', 'Email déjà vérifié.');
         }
@@ -87,13 +89,15 @@ class VerifyEmailController extends Controller
 
         try {
             $request->user()->sendEmailVerificationNotification();
+
             return back()->with('success', 'Email de vérification renvoyé. Vérifiez votre boîte mail (et le dossier spam).');
         } catch (\Throwable $e) {
             Log::error('Erreur renvoi email verification', [
                 'user_id' => $request->user()->id,
                 'message' => $e->getMessage(),
             ]);
-            return back()->with('error', 'Impossible d\'envoyer l\'email : ' . $e->getMessage());
+
+            return back()->with('error', 'Impossible d\'envoyer l\'email : '.$e->getMessage());
         }
     }
 
@@ -104,10 +108,10 @@ class VerifyEmailController extends Controller
 
     protected function redirectUserApreVerification(User $user): RedirectResponse
     {
-        return match($user->role) {
-            'admin'  => redirect()->route('admin.dashboard'),
-            'salon'  => redirect()->route('salon.dashboard'),
-            default  => redirect()->route('client.dashboard'),
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'salon' => redirect()->route('salon.dashboard'),
+            default => redirect()->route('client.dashboard'),
         };
     }
 }

@@ -18,7 +18,7 @@ return new class extends Migration
                 ->first();
 
             DB::table('salons')->where('id', $salon->id)->update([
-                'nb_avis'  => $stats->nb ?? 0,
+                'nb_avis' => $stats->nb ?? 0,
                 'note_moy' => $stats->nb > 0 ? round($stats->moy, 2) : 0,
             ]);
         }
