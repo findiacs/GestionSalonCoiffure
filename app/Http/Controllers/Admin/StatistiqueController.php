@@ -80,9 +80,12 @@ class StatistiqueController extends Controller
         }
 
         $totalAvis = Avis::count() ?: 1;
+        $counts = Avis::selectRaw('note, count(*) as count')
+            ->groupBy('note')
+            ->pluck('count', 'note');
         $distNotes = [];
         for ($i = 1; $i <= 5; $i++) {
-            $count = Avis::where('note', $i)->count();
+            $count = $counts->get($i, 0);
             $distNotes[$i] = [
                 'count' => $count,
                 'pct'   => round($count / $totalAvis * 100),
