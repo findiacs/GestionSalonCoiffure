@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -30,14 +29,15 @@ class ContactController extends Controller
             'message.min'      => 'Le message doit contenir au moins 20 caractères.',
         ]);
 
-        ContactMessage::create([
+        \App\Models\ContactMessage::create([
             'nom'     => $request->nom,
             'email'   => $request->email,
             'sujet'   => $request->sujet,
             'message' => $request->message,
         ]);
 
-        return back()->with('success',
+        return back()->with(
+            'success',
             'Votre message a bien été envoyé. Nous vous répondrons sous 24h.'
         );
     }
